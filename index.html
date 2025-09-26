@@ -1,84 +1,312 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tienda de Ropa de Hombre</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEIVER Tech - Tu Tienda de Tecnología</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00ff9b; /* Verde Neón */
+            --primary-hover: #00e68a;
+            --background-dark: #121212;
+            --surface-dark: #1e1e1e;
+            --text-light: #e0e0e0;
+            --text-dark: #ffffff;
+            --border-color: #2c2c2c;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            /* Add padding to the top to prevent content from being hidden by the fixed header */
+            padding-top: 120px; 
+        }
+        /* ================================================= */
+        /* === ESTILO PARA MANTENER EL BUSCADOR SIEMPRE VISIBLE === */
+        /* ================================================= */
+        .header-fixed-top {
+            position: fixed; /* Mantiene el header fijo en la parte superior */
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            transition: background-color 0.3s ease-in-out;
+            backdrop-filter: blur(10px);
+            background-color: rgba(18, 18, 18, 0.9);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .product-card {
+            background-color: var(--surface-dark);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 255, 155, 0.1), 0 0 15px rgba(0, 255, 155, 0.05);
+            border-color: var(--primary-color);
+        }
+        .product-card .add-to-cart-hover {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .product-card:hover .add-to-cart-hover { opacity: 1; transform: translateY(0); }
+        .category-btn.active-category {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 255, 155, 0.2);
+            transform: scale(1.03);
+        }
+        .slider-container { overflow: hidden; position: relative; }
+        .slide { display: none; animation: fadeEffect 1.5s; }
+        @keyframes fadeEffect { from {opacity: .4} to {opacity: 1} }
+        .countdown-box { background: rgba(0, 255, 155, 0.1); }
+        #countdown span { color: var(--primary-color); }
+        .modal-content { background-color: var(--surface-dark); color: var(--text-light); border: 1px solid var(--border-color); }
+        .modal-header, .modal-footer { border-color: var(--border-color); }
+        #toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 1000; }
+        .toast {
+            animation: slideInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            background-color: var(--primary-color); color: #000; font-weight: 600;
+        }
+        @keyframes slideInUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 </head>
 <body>
-  <div class="title-container">
-    <h1 class="title">ROPA DE HOMBRE</h1>
-    <hr class="divider">
-  </div>
-  <div class="container">
-    <div class="product">
-      <img src="producto1.jpg" alt="Producto 1">
-      <div class="info">
-        <h2>Producto 1</h2>
-        <p class="price">$50</p>
-        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae magna at justo fermentum vehicula.</p>
-        <button class="add-to-cart">Agregar al Carrito</button>
-      </div>
-    </div>
-    <div class="product">
-      <img src="producto2.jpg" alt="Producto 2">
-      <div class="info">
-        <h2>Producto 2</h2>
-        <p class="price">$70</p>
-        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae magna at justo fermentum vehicula.</p>
-        <button class="add-to-cart">Agregar al Carrito</button>
-      </div>
-    </div>
-  </div>
-  <div class="container">
-    <div class="product">
-      <img src="producto1.jpg" alt="Producto 1">
-      <div class="info">
-        <h2>Producto 1</h2>
-        <p class="price">$50</p>
-        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae magna at justo fermentum vehicula.</p>
-        <button class="add-to-cart">Agregar al Carrito</button>
-      </div>
-    </div>
-    <div class="product">
-      <img src="producto2.jpg" alt="Producto 2">
-      <div class="info">
-        <h2>Producto 2</h2>
-        <p class="price">$70</p>
-        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae magna at justo fermentum vehicula.</p>
-        <button class="add-to-cart">Agregar al Carrito</button>
-      </div>
-    </div>
-  </div>
-  <div class="container">
-    <div class="product">
-      <img src="producto1.jpg" alt="Producto 1">
-      <div class="info">
-        <h2>Producto 1</h2>
-        <p class="price">$50</p>
-        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae magna at justo fermentum vehicula.</p>
-        <button class="add-to-cart">Agregar al Carrito</button>
-      </div>
-    </div>
-    <div class="product">
-      <img src="producto2.jpg" alt="Producto 2">
-      <div class="info">
-        <h2>Producto 2</h2>
-        <p class="price">$70</p>
-        <p class="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae magna at justo fermentum vehicula.</p>
-        <button class="add-to-cart">Agregar al Carrito</button>
-      </div>
-    </div>
-  </div>
-  <div class="cart">
-    <h2>Carrito de Compras</h2>
-    <ul class="cart-items">
-      <!-- Los productos agregados al carrito se mostrarán aquí -->
-    </ul>
-    <button class="buy-button">Comprar</button>
-  </div>
 
-  <script src="script.js"></script>
+    <div id="toast-container"></div>
+    
+    <!-- Header Fijo con el Buscador -->
+    <header class="header-fixed-top" id="header">
+        <div class="bg-black text-center py-2 text-sm font-bold" style="color: var(--primary-color);">
+            <p>NOVEDADES CADA SEMANA</p>
+        </div>
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <img src="https://storage.googleapis.com/gweb-aip.appspot.com/users/1727043834165/1727348981449/IMG_8935.jpg" alt="LEIVER Logo" class="h-10 w-10 mr-3 filter grayscale brightness-200">
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">LEIVER</h1>
+                </div>
+                <!-- ======================================= -->
+                <!-- ===== AQUÍ ESTÁ EL BUSCADOR ===== -->
+                <!-- ======================================= -->
+                <div class="hidden md:flex flex-grow max-w-xl mx-8">
+                     <div class="relative w-full">
+                        <input type="text" id="search-input" placeholder="Escribe aquí para buscar productos..." class="w-full py-2.5 pl-12 pr-4 text-white bg-gray-800 border border-gray-700 rounded-full focus:outline-none focus:bg-gray-900 focus:ring-2 focus:ring-primary-color transition-all">
+                        <span class="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button id="cart-button" class="relative text-gray-300 hover:text-primary-color transition-colors focus:outline-none">
+                        <i class="fas fa-shopping-bag fa-lg"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-3 bg-primary-color text-black text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <section class="slider-container rounded-2xl mb-12 shadow-lg">
+             <div class="slide relative"><img src="https://placehold.co/1200x400/121212/00ff9b?text=Quantum+X" class="w-full h-auto object-cover rounded-2xl"><div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-start p-12 text-white rounded-2xl"><h2 class="text-5xl font-extrabold mb-4">Smartphone Quantum X</h2><p class="text-xl mb-6">El futuro en la palma de tu mano. Potencia sin límites.</p><a href="#all-products" class="bg-primary-color text-black font-bold py-3 px-8 rounded-lg hover:bg-primary-hover transition-colors text-lg">Descúbrelo</a></div></div>
+            <div class="slide relative"><img src="https://placehold.co/1200x400/121212/00ff9b?text=NovaBook+Pro" class="w-full h-auto object-cover rounded-2xl"><div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-start p-12 text-white rounded-2xl"><h2 class="text-5xl font-extrabold mb-4">NovaBook Pro</h2><p class="text-xl mb-6">Rendimiento extremo para profesionales y creadores.</p><a href="#ofertas-geek" class="bg-primary-color text-black font-bold py-3 px-8 rounded-lg hover:bg-primary-hover transition-colors text-lg">Ver Ofertas</a></div></div>
+            <a class="absolute top-1/2 left-4 -translate-y-1/2 text-white bg-black bg-opacity-30 p-3 rounded-full cursor-pointer hover:bg-opacity-50" id="prev-slide">&#10094;</a>
+            <a class="absolute top-1/2 right-4 -translate-y-1/2 text-white bg-black bg-opacity-30 p-3 rounded-full cursor-pointer hover:bg-opacity-50" id="next-slide">&#10095;</a>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold text-white mb-6">Explorar Categorías</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 text-center">
+                <div class="bg-surface-dark p-6 rounded-2xl border border-border-color hover:border-primary-color transition-all cursor-pointer category-btn active-category" data-category="All"><i class="fas fa-microchip text-4xl text-primary-color mb-3"></i><h3 class="font-semibold text-lg text-white">Todos</h3></div>
+                <div class="bg-surface-dark p-6 rounded-2xl border border-border-color hover:border-primary-color transition-all cursor-pointer category-btn" data-category="Smartphones"><i class="fas fa-mobile-alt text-4xl text-primary-color mb-3"></i><h3 class="font-semibold text-lg text-white">Smartphones</h3></div>
+                <div class="bg-surface-dark p-6 rounded-2xl border border-border-color hover:border-primary-color transition-all cursor-pointer category-btn" data-category="Laptops"><i class="fas fa-laptop text-4xl text-primary-color mb-3"></i><h3 class="font-semibold text-lg text-white">Laptops</h3></div>
+                <div class="bg-surface-dark p-6 rounded-2xl border border-border-color hover:border-primary-color transition-all cursor-pointer category-btn" data-category="Gaming"><i class="fas fa-gamepad text-4xl text-primary-color mb-3"></i><h3 class="font-semibold text-lg text-white">Gaming</h3></div>
+                <div class="bg-surface-dark p-6 rounded-2xl border border-border-color hover:border-primary-color transition-all cursor-pointer category-btn" data-category="Audio"><i class="fas fa-headphones-alt text-4xl text-primary-color mb-3"></i><h3 class="font-semibold text-lg text-white">Audio</h3></div>
+            </div>
+        </section>
+        
+        <div id="product-display-area">
+            <section id="ofertas-geek" class="mb-12 p-8 rounded-2xl bg-surface-dark border border-border-color">
+                <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                    <h2 class="text-4xl font-extrabold tracking-tight text-white">Ofertas Geek</h2>
+                    <div id="countdown" class="flex items-center space-x-2 text-2xl font-semibold">
+                        <span>Termina en:</span>
+                        <div class="countdown-box p-3 rounded-lg"><span id="days">00</span></div>:<div class="countdown-box p-3 rounded-lg"><span id="hours">00</span></div>:<div class="countdown-box p-3 rounded-lg"><span id="minutes">00</span></div>:<div class="countdown-box p-3 rounded-lg"><span id="seconds">00</span></div>
+                    </div>
+                </div>
+                 <div id="ofertas-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            </section>
+            <div id="main-content"></div>
+        </div>
+    </main>
+    
+    <!-- Modals -->
+    <div id="product-modal" class="modal fixed inset-0 bg-black bg-opacity-80 z-[110] hidden items-center justify-center p-4"><div class="modal-content rounded-lg shadow-xl w-11/12 md:w-2/3 lg:max-w-4xl max-h-[90vh] overflow-y-auto" id="modal-content-product"></div></div>
+    <div id="cart-modal" class="modal fixed inset-0 bg-black bg-opacity-80 z-[110] hidden items-center justify-center p-4"><div class="modal-content rounded-lg shadow-xl w-11/12 md:w-2/3 lg:max-w-lg max-h-[90vh] flex flex-col"><div class="p-5 border-b modal-header flex justify-between items-center"><h2 class="text-2xl font-bold text-white">Carrito de Compras</h2><button id="close-cart-modal" class="text-gray-400 hover:text-white text-2xl">&times;</button></div><div id="cart-items" class="p-5 overflow-y-auto flex-grow" style="background-color: var(--background-dark);"></div><div class="p-5 border-t modal-footer rounded-b-lg"><div class="flex justify-between items-center font-bold text-xl mb-4 text-white"><span>Total:</span><span id="cart-total">$0.00</span></div><button id="checkout-button" class="w-full bg-primary-color text-black py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:bg-gray-600 disabled:text-gray-400 shadow-lg">Generar Factura</button></div></div></div>
+    <div id="invoice-modal" class="modal fixed inset-0 bg-black bg-opacity-80 z-[110] hidden items-center justify-center p-4"><div class="modal-content rounded-lg shadow-xl w-11/12 md:w-2/3 lg:max-w-md max-h-[90vh] flex flex-col"><div class="p-5 border-b modal-header flex justify-between items-center"><h2 class="text-2xl font-bold text-white">Factura</h2><button id="close-invoice-modal" class="text-gray-400 hover:text-white text-2xl">&times;</button></div><div id="invoice-content" class="p-6 overflow-y-auto flex-grow"></div><div class="p-5 border-t modal-footer rounded-b-lg"><button id="send-whatsapp-button" class="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors flex items-center justify-center space-x-2 shadow-lg"><i class="fab fa-whatsapp fa-lg"></i><span>Enviar a WhatsApp</span></button></div></div></div>
+
+<script>
+    const products = [
+        { id: 1, name: 'Smartphone Quantum X', price: 899.99, image: 'https://placehold.co/400x400/00ff9b/121212?text=Quantum+X', description: 'Cámara Pro de 108MP, pantalla Super AMOLED de 120Hz y procesador de última generación.', category: 'Smartphones', onSale: true, oldPrice: 999.99 },
+        { id: 2, name: 'Laptop NovaBook Pro 15"', price: 1499.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=NovaBook', description: 'Potente chip M3 Pro, 18GB RAM, 1TB SSD. Ideal para profesionales creativos.', category: 'Laptops' },
+        { id: 3, name: 'Drone SkyRider 4K', price: 450.50, image: 'https://placehold.co/400x400/00ff9b/121212?text=SkyRider', description: 'Graba video en 4K a 60fps, 30 minutos de vuelo y sensores anticolisión.', category: 'Gaming' },
+        { id: 4, name: 'Smartwatch ChronoFit 5', price: 220.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=ChronoFit', description: 'Monitor de salud avanzado, GPS integrado, y más de 100 modos de deporte.', category: 'Smartphones', onSale: true, oldPrice: 275.00 },
+        { id: 5, name: 'Auriculares AuraSound ANC', price: 180.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=AuraSound', description: 'Cancelación de ruido activa, sonido Hi-Fi y 25 horas de batería.', category: 'Audio' },
+        { id: 6, name: 'Teclado Mecánico RGB', price: 110.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=MechKey', description: 'Switches personalizables, iluminación RGB por tecla y construcción de aluminio.', category: 'Gaming' },
+        { id: 7, name: 'Webcam ProStream 1080p', price: 75.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=ProStream', description: 'Calidad Full HD 1080p a 60fps, ideal para streaming y videoconferencias.', category: 'Laptops', onSale: true, oldPrice: 95.00 },
+        { id: 8, name: 'Tablet VisionPad Air', price: 650.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=VisionPad', description: 'Pantalla Liquid Retina, potente procesador y compatibilidad con lápiz óptico.', category: 'Laptops' },
+        { id: 9, name: 'Smartphone Nebula Lite', price: 450.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=Nebula+Lite', description: 'Excelente relación calidad-precio con una batería que dura todo el día.', category: 'Smartphones' },
+        { id: 10, name: 'Gaming Titan X Laptop', price: 2100.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=Titan+X', description: 'Gráficos RTX 4080, pantalla de 240Hz y sistema de refrigeración avanzado.', category: 'Laptops' },
+        { id: 11, name: 'Consola G-Station 6', price: 599.00, image: 'https://placehold.co/400x400/00ff9b/121212?text=G-Station+6', description: 'La nueva generación de consolas con juegos 4K y tiempos de carga ultra rápidos.', category: 'Gaming', onSale: true, oldPrice: 650.00 },
+        { id: 12, name: 'Earbuds EchoPods Mini', price: 89.99, image: 'https://placehold.co/400x400/00ff9b/121212?text=EchoPods', description: 'Sonido nítido, ajuste cómodo y estuche de carga inalámbrica.', category: 'Audio' }
+    ];
+    let cart = [];
+    let currentCategory = 'All';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initSlider();
+        initCountdown();
+        setupEventListeners();
+        updateProductDisplay();
+    });
+
+    function setupEventListeners() {
+        // --- CÓDIGO DEL BUSCADOR ---
+        document.getElementById('search-input').addEventListener('input', updateProductDisplay);
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelector('.category-btn.active-category').classList.remove('active-category');
+                btn.classList.add('active-category');
+                currentCategory = btn.dataset.category;
+                updateProductDisplay();
+            });
+        });
+
+        document.getElementById('prev-slide').addEventListener('click', () => { plusSlides(-1); clearInterval(slideInterval); slideInterval = setInterval(() => plusSlides(1), 5000); });
+        document.getElementById('next-slide').addEventListener('click', () => { plusSlides(1); clearInterval(slideInterval); slideInterval = setInterval(() => plusSlides(1), 5000); });
+        document.getElementById('cart-button').addEventListener('click', openCartModal);
+        document.getElementById('close-cart-modal').addEventListener('click', closeCartModal);
+        document.getElementById('checkout-button').addEventListener('click', generateInvoice);
+        document.getElementById('close-invoice-modal').addEventListener('click', () => document.getElementById('invoice-modal').classList.add('hidden'));
+        document.getElementById('send-whatsapp-button').addEventListener('click', sendInvoiceToWhatsApp);
+    }
+    
+    // --- FUNCIÓN PRINCIPAL DEL BUSCADOR ---
+    function updateProductDisplay() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        let filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm) || p.description.toLowerCase().includes(searchTerm));
+
+        if (currentCategory !== 'All') {
+            filteredProducts = filteredProducts.filter(p => p.category === currentCategory);
+        }
+        renderPage(filteredProducts);
+    }
+
+    function renderPage(productsToRender) {
+        const isDefaultView = currentCategory === 'All' && document.getElementById('search-input').value === '';
+        const ofertasSection = document.getElementById('ofertas-geek');
+        const mainContent = document.getElementById('main-content');
+        if (isDefaultView) {
+            ofertasSection.style.display = 'block';
+            const onSaleProducts = productsToRender.filter(p => p.onSale);
+            const allOtherProducts = productsToRender.filter(p => !p.onSale);
+            document.getElementById('ofertas-grid').innerHTML = onSaleProducts.map(product => productCard(product)).join('');
+            mainContent.innerHTML = createProductSection('Últimos Lanzamientos', allOtherProducts, 'all-products');
+        } else {
+            ofertasSection.style.display = 'none';
+            let title = currentCategory === 'All' ? 'Resultados de Búsqueda' : `Mostrando: ${currentCategory}`;
+            if (productsToRender.length === 0) {
+                 mainContent.innerHTML = `<div class="text-center py-12"><h2 class="text-2xl font-bold text-white mb-2">No se encontraron productos</h2><p class="text-gray-400">Intenta con otra categoría o término de búsqueda.</p></div>`;
+            } else {
+                 mainContent.innerHTML = createProductSection(title, productsToRender, 'filtered-results');
+            }
+        }
+        addCardEventListeners();
+    }
+    
+    function createProductSection(title, products, id) {
+        if (products.length === 0) return '';
+        return `<section id="${id}" class="mb-12"><h2 class="text-3xl font-bold text-white mb-6">${title}</h2><div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">${products.map(product => productCard(product)).join('')}</div></section>`;
+    }
+    function productCard(product) {
+        const discount = product.onSale ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) : 0;
+        return `<div class="rounded-xl product-card flex flex-col justify-between" data-product-id="${product.id}"><div class="relative"><div class="cursor-pointer product-image-container"><img src="${product.image}" alt="${product.name}" class="w-full h-52 object-cover rounded-t-xl"></div>${product.onSale ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">-${discount}%</span>` : ''}<div class="add-to-cart-hover absolute bottom-3 right-3"><button class="bg-primary-color text-black w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-primary-hover transition-colors add-to-cart-btn" data-product-id="${product.id}"><i class="fas fa-cart-plus"></i></button></div></div><div class="p-4 flex-grow cursor-pointer product-details"><h3 class="font-semibold text-white truncate h-6">${product.name}</h3><div class="flex items-baseline mt-2"><span class="text-xl font-bold text-primary-color">$${product.price.toFixed(2)}</span>${product.onSale ? `<span class="ml-2 text-sm text-gray-500 line-through">$${product.oldPrice.toFixed(2)}</span>` : ''}</div></div></div>`;
+    }
+    function addCardEventListeners() {
+        document.querySelectorAll('.product-image-container, .product-details').forEach(el => { el.addEventListener('click', (e) => openProductModal(parseInt(e.currentTarget.closest('.product-card').dataset.productId))); });
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => { btn.addEventListener('click', (e) => { e.stopPropagation(); addToCart(parseInt(btn.dataset.productId)); }); });
+    }
+    let slideIndex = 1; let slideInterval; function plusSlides(n) { showSlides(slideIndex += n); }
+    function initSlider() { showSlides(slideIndex); slideInterval = setInterval(() => plusSlides(1), 5000); }
+    function showSlides(n) {
+        let slides = document.getElementsByClassName("slide"); if (n > slides.length) {slideIndex = 1} if (n < 1) {slideIndex = slides.length}
+        Array.from(slides).forEach(slide => slide.style.display = "none"); if (slides.length > 0) slides[slideIndex-1].style.display = "block";
+    }
+    function initCountdown() {
+        const countdownDate = new Date().getTime() + (2 * 24 * 60 * 60 * 1000);
+        const x = setInterval(() => {
+            const distance = countdownDate - new Date().getTime();
+            if (distance < 0) { clearInterval(x); document.getElementById("countdown").innerHTML = "<span class='text-red-500 font-bold'>¡OFERTAS TERMINADAS!</span>"; return; }
+            document.getElementById("days").innerText = Math.floor(distance / 86400000).toString().padStart(2, '0');
+            document.getElementById("hours").innerText = Math.floor((distance % 86400000) / 3600000).toString().padStart(2, '0');
+            document.getElementById("minutes").innerText = Math.floor((distance % 3600000) / 60000).toString().padStart(2, '0');
+            document.getElementById("seconds").innerText = Math.floor((distance % 60000) / 1000).toString().padStart(2, '0');
+        }, 1000);
+    }
+    function openProductModal(productId) {
+        const product = products.find(p => p.id === productId); if (!product) return;
+        document.getElementById('modal-content-product').innerHTML = `<div class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 relative"><button id="close-product-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-3xl z-10">&times;</button><div class="bg-black rounded-lg flex justify-center items-center p-4"><img src="${product.image}" alt="${product.name}" class="rounded-lg max-h-96 object-contain"></div><div class="flex flex-col justify-center"><span class="text-sm font-semibold text-primary-color mb-1">${product.category}</span><h2 class="text-3xl font-bold text-white mb-2">${product.name}</h2><p class="text-gray-400 mb-4">${product.description}</p><div class="flex items-baseline mb-6"><span class="text-3xl font-bold text-primary-color">$${product.price.toFixed(2)}</span>${product.onSale ? `<span class="ml-3 text-lg text-gray-500 line-through">$${product.oldPrice.toFixed(2)}</span>` : ''}</div><button class="w-full bg-primary-color text-black py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg add-to-cart-btn-modal" data-product-id="${product.id}"><i class="fas fa-cart-plus mr-2"></i>Añadir al Carrito</button></div></div>`;
+        document.getElementById('product-modal').classList.remove('hidden'); document.getElementById('product-modal').classList.add('flex');
+        document.getElementById('close-product-modal').addEventListener('click', closeProductModal);
+        document.querySelector('.add-to-cart-btn-modal').addEventListener('click', () => { addToCart(product.id); closeProductModal(); });
+    }
+    function closeProductModal() { document.getElementById('product-modal').classList.add('hidden'); }
+    function addToCart(productId) {
+        const existingItem = cart.find(item => item.id === productId);
+        if (existingItem) existingItem.quantity++; else cart.push({ id: productId, quantity: 1 });
+        updateCartUI(); showToast('Producto añadido al carrito');
+    }
+    function updateCartUI() {
+        const cartItemsContainer = document.getElementById('cart-items'); const cartTotalEl = document.getElementById('cart-total');
+        const cartCountEl = document.getElementById('cart-count'); const checkoutButton = document.getElementById('checkout-button');
+        const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0); cartCountEl.textContent = cartCount;
+        cartCount > 0 ? cartCountEl.classList.remove('hidden') : cartCountEl.classList.add('hidden');
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p class="text-gray-500 text-center p-8">Tu carrito está vacío.</p>'; checkoutButton.disabled = true;
+        } else {
+            cartItemsContainer.innerHTML = cart.map(item => { const product = products.find(p => p.id === item.id); return `<div class="flex items-center justify-between py-4 border-b border-border-color last:border-b-0"><div class="flex items-center"><img src="${product.image}" alt="${product.name}" class="w-16 h-16 object-cover rounded-md mr-4"><div><h4 class="font-semibold text-white">${product.name}</h4><p class="text-sm text-gray-400">$${product.price.toFixed(2)}</p></div></div><div class="flex items-center space-x-4"><div class="flex items-center border border-border-color rounded-md"><button class="quantity-change px-2 py-1 text-gray-400 hover:text-white" data-id="${item.id}" data-change="-1">-</button><span class="px-2 text-white">${item.quantity}</span><button class="quantity-change px-2 py-1 text-gray-400 hover:text-white" data-id="${item.id}" data-change="1">+</button></div><button class="remove-item text-red-500 hover:text-red-400 text-lg" data-id="${item.id}"><i class="fas fa-trash-alt"></i></button></div></div>`; }).join('');
+            checkoutButton.disabled = false;
+        }
+        const total = cart.reduce((sum, item) => sum + (products.find(p => p.id === item.id).price * item.quantity), 0);
+        cartTotalEl.textContent = `$${total.toFixed(2)}`;
+        document.querySelectorAll('.quantity-change').forEach(btn => btn.addEventListener('click', e => { const id = parseInt(e.currentTarget.dataset.id), change = parseInt(e.currentTarget.dataset.change), item = cart.find(i => i.id === id); if(item) { item.quantity += change; if(item.quantity <= 0) cart = cart.filter(i => i.id !== id); } updateCartUI(); }));
+        document.querySelectorAll('.remove-item').forEach(btn => btn.addEventListener('click', e => { cart = cart.filter(i => i.id !== parseInt(e.currentTarget.dataset.id)); updateCartUI(); }));
+    }
+    function openCartModal() { updateCartUI(); document.getElementById('cart-modal').classList.remove('hidden'); document.getElementById('cart-modal').classList.add('flex'); }
+    function closeCartModal() { document.getElementById('cart-modal').classList.add('hidden'); }
+    function generateInvoice() {
+        const invoiceContent = document.getElementById('invoice-content'); const now = new Date(); const invoiceId = `INV-${Date.now()}`;
+        let itemsHtml = cart.map(item => { const p = products.find(pr => pr.id === item.id); return `<div class="flex justify-between text-sm py-1.5 text-gray-300"><span class="w-3/4 truncate pr-2">${item.quantity}x ${p.name}</span><span>$${(p.price * item.quantity).toFixed(2)}</span></div>`; }).join('');
+        const total = cart.reduce((s, i) => s + (products.find(p => p.id === i.id).price * i.quantity), 0);
+        invoiceContent.innerHTML = `<div class="text-center mb-4"><h3 class="font-bold text-lg text-white">LEIVER Tech</h3><p class="text-sm text-gray-400">Factura #${invoiceId.slice(-6)}</p><p class="text-sm text-gray-400">${now.toLocaleDateString('es-DO')} ${now.toLocaleTimeString('es-DO')}</p></div><div class="border-t border-b border-dashed border-border-color py-2 my-2">${itemsHtml}</div><div class="flex justify-between font-bold text-lg mt-4 text-white"><span>Total:</span><span>$${total.toFixed(2)}</span></div>`;
+        document.getElementById('invoice-modal').classList.remove('hidden'); document.getElementById('invoice-modal').classList.add('flex');
+    }
+    function sendInvoiceToWhatsApp() {
+        const text = `*Factura de LEIVER Tech*\n\nHola, este es mi pedido:\n\n` + cart.map(i => {const p = products.find(pr => pr.id === i.id); return `*-* ${i.quantity}x ${p.name} - $${(p.price * i.quantity).toFixed(2)}`}).join('\n') + `\n\n*Total: $${cart.reduce((s, i) => s + (products.find(p => p.id === i.id).price * i.quantity), 0).toFixed(2)}*` + `\n\n¡Gracias!`;
+        window.open(`https://wa.me/18294379911?text=${encodeURIComponent(text)}`, '_blank');
+        cart = []; updateCartUI(); document.getElementById('invoice-modal').classList.add('hidden'); closeCartModal();
+    }
+    function showToast(message) {
+        const toastContainer = document.getElementById('toast-container'); const toast = document.createElement('div');
+        toast.className = 'toast p-4 rounded-lg shadow-lg mb-2'; toast.textContent = message;
+        toastContainer.appendChild(toast); setTimeout(() => toast.remove(), 3000);
+    }
+</script>
+
 </body>
 </html>
