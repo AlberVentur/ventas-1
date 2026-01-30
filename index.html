@@ -3,37 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Tiques y Reporte de Turnos</title>
+    <title>Sistema de Trazabilidad QR - Visualizador Móvil</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             body { background: white; }
             @page { size: landscape; margin: 0; }
-            #printable-area {
-                display: flex !important;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-            }
+            #printable-area { display: flex !important; justify-content: center; align-items: center; height: 100vh; }
         }
         .print-only { display: none; }
         
+        /* Estilo del Tique Horizontal */
         .ticket-box {
             width: 700px;
             background: white;
-            border: 4px solid #1a1a1a;
+            border: 4px solid #000;
             padding: 25px;
             display: flex;
             gap: 20px;
             color: #000;
         }
         .qr-side {
-            flex: 0 0 220px;
-            border-left: 2px dashed #444;
+            flex: 0 0 200px;
+            border-left: 2px dashed #000;
             padding-left: 20px;
             display: flex;
             flex-direction: column;
@@ -41,125 +40,153 @@
             justify-content: center;
         }
         .info-side { flex: 1; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Estilo del Visualizador Móvil (Solo visible al escanear) */
+        #mobile-viewer {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #f8fafc;
+            z-index: 9999;
+            overflow-y: auto;
+        }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen pb-10">
+<body class="bg-slate-100 min-h-screen">
 
-    <div class="max-w-7xl mx-auto pt-8 px-4 no-print">
-        <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-            <!-- Header -->
-            <div class="bg-slate-900 p-6 text-white flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-black tracking-tight uppercase">Control de Producción y Desperdicios</h1>
-                    <p class="text-slate-400 text-sm italic">Registro histórico y análisis por turnos</p>
+    <!-- VISUALIZADOR MÓVIL (Lo que se ve al escanear) -->
+    <div id="mobile-viewer" class="p-6">
+        <div class="max-w-md mx-auto space-y-6">
+            <div class="bg-indigo-600 p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <svg width="100" height="100" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2-2zm12 4c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3zm-9 8c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1H6v-1z"/></svg>
                 </div>
-                <div class="text-right">
-                    <p class="text-xs font-bold opacity-70 uppercase">ID Próximo</p>
-                    <p id="next-id-label" class="text-3xl font-mono font-black text-indigo-400">#001</p>
+                <h1 class="text-xs font-black uppercase tracking-[0.3em] mb-2 opacity-80">Paleta Registrada</h1>
+                <p id="m-id" class="text-5xl font-black mb-6">#000</p>
+                <div class="space-y-4 border-t border-indigo-400 pt-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold opacity-60 uppercase">Turno</p>
+                            <p id="m-turno" class="text-xl font-bold">--</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold opacity-60 uppercase">Línea</p>
+                            <p id="m-linea" class="text-xl font-bold">--</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold opacity-60 uppercase">Material</p>
+                        <p id="m-tipo" class="text-xl font-bold">--</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <!-- FORMULARIO (4 columnas) -->
-                <section class="lg:col-span-4 bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                    <h2 class="text-lg font-bold mb-4 text-slate-700 flex items-center gap-2">
-                        <span class="bg-indigo-600 text-white p-1.5 rounded-md text-xs">NEW</span> Entrada de Datos
-                    </h2>
-                    <form id="ticketForm" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-10 rounded-[2.5rem] shadow-xl text-center border-t-8 border-indigo-600">
+                <p class="text-slate-400 font-bold uppercase text-xs mb-2">Peso Neto Confirmado</p>
+                <p id="m-peso" class="text-7xl font-black text-slate-900 tracking-tighter">0.00 <span class="text-3xl text-indigo-600">KG</span></p>
+                <div class="mt-8 pt-8 border-t border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-300 uppercase">Fecha de Registro</p>
+                    <p id="m-fecha" class="text-slate-500 font-bold tracking-widest">00-00-0000</p>
+                </div>
+            </div>
+            
+            <button onclick="location.href=location.pathname" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-lg">Regresar al Sistema</button>
+        </div>
+    </div>
+
+    <!-- SISTEMA DE ESCRITORIO (Panel de Control) -->
+    <div id="desktop-app" class="max-w-7xl mx-auto pt-8 px-4 no-print">
+        <div class="bg-white rounded-3xl shadow-xl overflow-hidden mb-8 border border-slate-200">
+            <!-- Header -->
+            <div class="bg-slate-900 p-8 text-white flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight uppercase leading-none">Smart Ticket Pro</h1>
+                    <p class="text-indigo-400 font-bold text-xs mt-2 uppercase tracking-widest">Trazabilidad en Tiempo Real</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black opacity-50 uppercase">Siguiente Tique</p>
+                    <p id="next-id-label" class="text-4xl font-black text-white">#001</p>
+                </div>
+            </div>
+
+            <div class="p-8 grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <!-- FORMULARIO -->
+                <section class="lg:col-span-4 space-y-6">
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                        <h2 class="text-lg font-black mb-6 text-slate-800 uppercase tracking-tight">Registro de Paleta</h2>
+                        <form id="ticketForm" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase">Turno</label>
+                                    <select id="turno" required class="w-full p-3 border-0 rounded-xl bg-white shadow-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                                        <option value="A1">A1</option><option value="A2">A2</option><option value="A3">A3</option>
+                                        <option value="B1">B1</option><option value="B2">B2</option><option value="B3">B3</option>
+                                        <option value="C1">C1</option><option value="C2">C2</option><option value="C3">C3</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase">Línea</label>
+                                    <input type="text" id="linea" required class="w-full p-3 border-0 rounded-xl bg-white shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="01">
+                                </div>
+                            </div>
                             <div>
-                                <label class="block text-[10px] font-black text-slate-500 mb-1">TURNO ESPECÍFICO</label>
-                                <select id="turno" required class="w-full p-3 border rounded-xl bg-white font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
-                                    <optgroup label="Turno A">
-                                        <option value="A1">A1</option>
-                                        <option value="A2">A2</option>
-                                        <option value="A3">A3</option>
-                                    </optgroup>
-                                    <optgroup label="Turno B">
-                                        <option value="B1">B1</option>
-                                        <option value="B2">B2</option>
-                                        <option value="B3">B3</option>
-                                    </optgroup>
-                                    <optgroup label="Turno C">
-                                        <option value="C1">C1</option>
-                                        <option value="C2">C2</option>
-                                        <option value="C3">C3</option>
-                                    </optgroup>
+                                <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase">Peso (KG)</label>
+                                <input type="number" step="0.01" id="peso" required class="w-full p-3 border-0 rounded-xl bg-white shadow-sm text-3xl font-black text-indigo-600 outline-none" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase">Fecha</label>
+                                <input type="date" id="fecha" required class="w-full p-3 border-0 rounded-xl bg-white shadow-sm outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 mb-1 uppercase">Material</label>
+                                <select id="tipo" required class="w-full p-3 border-0 rounded-xl bg-white shadow-sm font-bold outline-none cursor-pointer">
+                                    <option value="DESPERDICIO DE MASA">DESPERDICIO DE MASA</option>
+                                    <option value="ESP">ESP</option>
+                                    <option value="PLÁSTICO">PLÁSTICO</option>
                                 </select>
                             </div>
-                            <div>
-                                <label class="block text-[10px] font-black text-slate-500 mb-1">LÍNEA</label>
-                                <input type="text" id="linea" required class="w-full p-3 border rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="01">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-500 mb-1">PESO REGISTRADO (KG)</label>
-                            <input type="number" step="0.01" id="peso" required class="w-full p-3 border rounded-xl bg-white text-2xl font-black text-indigo-700 outline-none" placeholder="0.00">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-500 mb-1">FECHA DE PRODUCCIÓN</label>
-                            <input type="date" id="fecha" required class="w-full p-3 border rounded-xl bg-white outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black text-slate-500 mb-1">CATEGORÍA MATERIAL</label>
-                            <select id="tipo" required class="w-full p-3 border rounded-xl bg-white font-bold outline-none cursor-pointer">
-                                <option value="DESPERDICIO DE MASA">DESPERDICIO DE MASA</option>
-                                <option value="ESP">ESP</option>
-                                <option value="PLÁSTICO">PLÁSTICO</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-black py-4 rounded-xl shadow-lg transition-all active:scale-95 uppercase tracking-widest">
-                            Generar Tique
-                        </button>
-                    </form>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl shadow-lg transition-all active:scale-95 uppercase tracking-widest text-sm">
+                                Generar Tique e Imagen
+                            </button>
+                        </form>
+                    </div>
                 </section>
 
-                <!-- REPORTE Y BUSCADOR (8 columnas) -->
+                <!-- REPORTE -->
                 <section class="lg:col-span-8 space-y-6">
-                    <!-- Buscador y Totales por Turno -->
-                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-lg font-bold text-indigo-900 uppercase tracking-tighter">Resumen de Generación por Fecha</h2>
-                            <input type="date" id="searchDate" class="p-2 border rounded-lg bg-white font-bold text-indigo-700 outline-none">
+                    <div class="grid grid-cols-4 gap-4" id="statsGrid">
+                        <div class="col-span-4 md:col-span-1 bg-white p-4 rounded-2xl border border-slate-100">
+                            <input type="date" id="searchDate" class="w-full font-bold text-indigo-600 outline-none">
                         </div>
-                        
-                        <!-- Cards de Totales por Turno -->
-                        <div class="grid grid-cols-3 gap-4" id="statsGrid">
-                            <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-200">
-                                <p class="text-[10px] font-black text-slate-400 uppercase">Total Grupo A</p>
-                                <p id="totalA" class="text-xl font-black text-slate-800">0.00 kg</p>
-                            </div>
-                            <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-200">
-                                <p class="text-[10px] font-black text-slate-400 uppercase">Total Grupo B</p>
-                                <p id="totalB" class="text-xl font-black text-slate-800">0.00 kg</p>
-                            </div>
-                            <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-200">
-                                <p class="text-[10px] font-black text-slate-400 uppercase">Total Grupo C</p>
-                                <p id="totalC" class="text-xl font-black text-slate-800">0.00 kg</p>
-                            </div>
+                        <div class="bg-indigo-600 p-4 rounded-2xl text-white">
+                            <p class="text-[9px] font-bold opacity-70 uppercase tracking-widest">Total Grupo A</p>
+                            <p id="totalA" class="text-xl font-black">0.00 kg</p>
+                        </div>
+                        <div class="bg-indigo-600 p-4 rounded-2xl text-white">
+                            <p class="text-[9px] font-bold opacity-70 uppercase tracking-widest">Total Grupo B</p>
+                            <p id="totalB" class="text-xl font-black">0.00 kg</p>
+                        </div>
+                        <div class="bg-indigo-600 p-4 rounded-2xl text-white">
+                            <p class="text-[9px] font-bold opacity-70 uppercase tracking-widest">Total Grupo C</p>
+                            <p id="totalC" class="text-xl font-black">0.00 kg</p>
                         </div>
                     </div>
 
-                    <!-- Tabla de Historial -->
-                    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                        <div class="max-h-[350px] overflow-y-auto custom-scrollbar">
-                            <table class="w-full text-sm text-left">
+                    <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div class="max-h-[400px] overflow-y-auto">
+                            <table class="w-full text-sm text-left border-collapse">
                                 <thead class="bg-slate-50 border-b sticky top-0">
-                                    <tr class="text-[10px] font-black text-slate-400 uppercase">
-                                        <th class="px-4 py-3">Tique</th>
-                                        <th class="px-4 py-3">Turno</th>
-                                        <th class="px-4 py-3">Material</th>
-                                        <th class="px-4 py-3 text-right">Peso</th>
-                                        <th class="px-4 py-3 text-center">Opciones</th>
+                                    <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        <th class="px-6 py-4">Tique</th>
+                                        <th class="px-6 py-4">Turno</th>
+                                        <th class="px-6 py-4">Material</th>
+                                        <th class="px-6 py-4 text-right">Peso</th>
+                                        <th class="px-6 py-4 text-center">Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody id="historyTable" class="divide-y divide-slate-100">
-                                    <!-- Dinámico -->
-                                </tbody>
+                                <tbody id="historyTable" class="divide-y divide-slate-100"></tbody>
                             </table>
-                            <div id="noResults" class="hidden text-center py-20 text-slate-400 italic">No hay registros para este día.</div>
+                            <div id="noResults" class="hidden text-center py-20 text-slate-300 italic font-medium tracking-widest">SIN REGISTROS PARA HOY</div>
                         </div>
                     </div>
                 </section>
@@ -167,79 +194,87 @@
         </div>
     </div>
 
-    <!-- MODAL DE VISUALIZACIÓN -->
-    <div id="modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 no-print">
-        <div class="bg-white p-8 rounded-[2rem] max-w-4xl w-full">
-            <div class="flex justify-between items-center mb-6">
-                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black uppercase">Visualización de Tique Activa</span>
-                <button onclick="closeModal()" class="text-4xl text-slate-300 hover:text-slate-900 leading-none">&times;</button>
+    <!-- MODAL TIQUE -->
+    <div id="modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-50 hidden flex items-center justify-center p-4 no-print">
+        <div class="bg-white p-10 rounded-[3rem] max-w-4xl w-full shadow-2xl">
+            <div class="flex justify-between items-center mb-8">
+                <span class="bg-indigo-100 text-indigo-600 px-4 py-1.5 rounded-full text-[10px] font-black uppercase">Tique Generado con Éxito</span>
+                <button onclick="closeModal()" class="text-4xl text-slate-300 hover:text-slate-900">&times;</button>
             </div>
 
-            <!-- TIQUE HORIZONTAL PARA CAPTURA -->
             <div id="ticket-capture" class="ticket-box mx-auto">
                 <div class="info-side">
                     <div class="flex justify-between items-start mb-6">
-                        <div class="bg-black text-white px-2 py-0.5 text-[9px] font-bold">REGISTRO DE PRODUCCIÓN</div>
-                        <div id="v-id" class="text-4xl font-black tracking-tighter">#000</div>
+                        <div class="bg-indigo-600 text-white px-3 py-1 text-[9px] font-black rounded-sm">TRAZABILIDAD DIGITAL</div>
+                        <div id="v-id" class="text-5xl font-black tracking-tighter">#000</div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-x-6 gap-y-4 text-sm mb-6">
+                    <div class="grid grid-cols-2 gap-y-6 mb-8">
                         <div>
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fecha</p>
-                            <p id="v-fecha" class="font-bold text-base">2024-00-00</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fecha Registro</p>
+                            <p id="v-fecha" class="font-bold text-lg">00-00-0000</p>
                         </div>
                         <div>
                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Turno / Línea</p>
-                            <p class="font-bold text-base"><span id="v-turno" class="text-indigo-600">-</span> / <span id="v-linea">-</span></p>
+                            <p class="font-bold text-lg"><span id="v-turno" class="text-indigo-600">-</span> / <span id="v-linea">-</span></p>
                         </div>
                         <div class="col-span-2">
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Material</p>
-                            <p id="v-tipo" class="text-xl font-black uppercase text-slate-800">SIN NOMBRE</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Material Paletizado</p>
+                            <p id="v-tipo" class="text-2xl font-black uppercase text-slate-900">SIN NOMBRE</p>
                         </div>
                     </div>
 
-                    <div class="border-t-4 border-black pt-4">
-                        <p class="text-[9px] font-black text-red-500 uppercase">Peso Neto Total (Kilogramos)</p>
+                    <div class="border-t-[6px] border-indigo-600 pt-6">
+                        <p class="text-[9px] font-black text-red-500 uppercase tracking-[0.2em] mb-1">Peso Neto Registrado</p>
                         <p id="v-peso" class="text-7xl font-black italic tracking-tighter leading-none">0.00 KG</p>
                     </div>
                 </div>
                 <div class="qr-side">
                     <div id="qrcode"></div>
-                    <p class="text-[8px] font-black text-center mt-4 text-slate-400 uppercase leading-tight tracking-widest">Escaneo de<br>Trazabilidad</p>
+                    <p class="text-[8px] font-black text-center mt-5 text-indigo-400 uppercase tracking-widest leading-relaxed">Escanea para ver<br>en tu celular</p>
                 </div>
             </div>
 
-            <div class="mt-10 flex flex-col md:flex-row gap-4 no-print">
-                <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest flex justify-center items-center gap-2 hover:bg-black transition-all">
-                    🖨️ Imprimir Tique
-                </button>
-                <button onclick="downloadTicket()" class="flex-1 bg-indigo-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest flex justify-center items-center gap-2 hover:bg-indigo-700 transition-all">
-                    📥 Descargar Imagen
-                </button>
-                <button onclick="closeModal()" class="px-10 bg-slate-100 text-slate-500 font-bold py-5 rounded-2xl hover:bg-slate-200 transition-all">
-                    Cerrar
-                </button>
+            <div class="mt-10 flex gap-4 no-print">
+                <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all">🖨️ Imprimir</button>
+                <button onclick="downloadTicket()" class="flex-1 bg-indigo-600 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all">📥 Descargar</button>
             </div>
         </div>
     </div>
 
-    <!-- ÁREA DE IMPRESIÓN SOLAMENTE -->
     <div id="printable-area" class="print-only"></div>
 
     <script>
-        // --- DATA PERSISTENCE ---
-        let tickets = JSON.parse(localStorage.getItem('DB_TIQUES_PRO_V2')) || [];
+        let tickets = JSON.parse(localStorage.getItem('DB_TIQUES_SCAN')) || [];
         const form = document.getElementById('ticketForm');
         const searchInput = document.getElementById('searchDate');
         const historyBody = document.getElementById('historyTable');
         const nextIdLabel = document.getElementById('next-id-label');
 
-        // Defaults
         document.getElementById('fecha').valueAsDate = new Date();
         searchInput.valueAsDate = new Date();
 
+        // --- LÓGICA DE ESCANEO (MODO VISUALIZADOR) ---
+        function checkScan() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('data')) {
+                const rawData = atob(params.get('data')); // Decodificar base64
+                const [id, fecha, turno, linea, tipo, peso] = rawData.split('|');
+                
+                document.getElementById('desktop-app').style.display = 'none';
+                document.getElementById('mobile-viewer').style.display = 'block';
+                
+                document.getElementById('m-id').innerText = '#' + id.padStart(3, '0');
+                document.getElementById('m-fecha').innerText = fecha;
+                document.getElementById('m-turno').innerText = turno;
+                document.getElementById('m-linea').innerText = linea;
+                document.getElementById('m-tipo').innerText = tipo;
+                document.getElementById('m-peso').innerText = peso;
+            }
+        }
+
         function syncDB() {
-            localStorage.setItem('DB_TIQUES_PRO_V2', JSON.stringify(tickets));
+            localStorage.setItem('DB_TIQUES_SCAN', JSON.stringify(tickets));
             renderHistory();
             updateStats();
             updateNextId();
@@ -250,31 +285,24 @@
             nextIdLabel.innerText = `#${String(lastId + 1).padStart(3, '0')}`;
         }
 
-        // --- CALCULATION OF TOTALS ---
         function updateStats() {
             const date = searchInput.value;
             const daily = tickets.filter(t => t.fecha === date);
-            
-            let sumA = 0, sumB = 0, sumC = 0;
-            
+            let a = 0, b = 0, c = 0;
             daily.forEach(t => {
-                const peso = parseFloat(t.peso);
-                if (t.turno.startsWith('A')) sumA += peso;
-                if (t.turno.startsWith('B')) sumB += peso;
-                if (t.turno.startsWith('C')) sumC += peso;
+                if (t.turno.startsWith('A')) a += parseFloat(t.peso);
+                if (t.turno.startsWith('B')) b += parseFloat(t.peso);
+                if (t.turno.startsWith('C')) c += parseFloat(t.peso);
             });
-
-            document.getElementById('totalA').innerText = `${sumA.toFixed(2)} kg`;
-            document.getElementById('totalB').innerText = `${sumB.toFixed(2)} kg`;
-            document.getElementById('totalC').innerText = `${sumC.toFixed(2)} kg`;
+            document.getElementById('totalA').innerText = `${a.toFixed(2)} kg`;
+            document.getElementById('totalB').innerText = `${b.toFixed(2)} kg`;
+            document.getElementById('totalC').innerText = `${c.toFixed(2)} kg`;
         }
 
-        // --- FORM SUBMISSION ---
         form.onsubmit = (e) => {
             e.preventDefault();
             const lastId = tickets.length > 0 ? Math.max(...tickets.map(t => t.id)) : 0;
-            
-            const newTicket = {
+            const tique = {
                 id: lastId + 1,
                 turno: document.getElementById('turno').value,
                 linea: document.getElementById('linea').value.toUpperCase(),
@@ -282,44 +310,35 @@
                 fecha: document.getElementById('fecha').value,
                 tipo: document.getElementById('tipo').value
             };
-
-            tickets.unshift(newTicket);
+            tickets.unshift(tique);
             syncDB();
-            openTicket(newTicket);
+            openTicket(tique);
             form.reset();
             document.getElementById('fecha').valueAsDate = new Date();
         };
 
         function renderHistory() {
-            const searchVal = searchInput.value;
-            const filtered = tickets.filter(t => t.fecha === searchVal);
-            
+            const date = searchInput.value;
+            const filtered = tickets.filter(t => t.fecha === date);
             historyBody.innerHTML = '';
-            const noResults = document.getElementById('noResults');
-
-            if (filtered.length === 0) {
-                noResults.classList.remove('hidden');
-            } else {
-                noResults.classList.add('hidden');
-                filtered.forEach(t => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition-all border-b border-slate-100";
-                    tr.innerHTML = `
-                        <td class="px-4 py-4 font-mono font-bold text-indigo-600">#${String(t.id).padStart(3, '0')}</td>
-                        <td class="px-4 py-4"><span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-black">${t.turno}</span></td>
-                        <td class="px-4 py-4 font-bold text-slate-700">${t.tipo}</td>
-                        <td class="px-4 py-4 text-right font-black text-slate-900">${t.peso} kg</td>
-                        <td class="px-4 py-4 text-center space-x-1">
-                            <button onclick='viewTicketById(${t.id})' class="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-indigo-600 hover:text-white transition-all">👁️</button>
-                            <button onclick='deleteTicket(${t.id})' class="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all">🗑️</button>
-                        </td>
-                    `;
-                    historyBody.appendChild(tr);
-                });
-            }
+            document.getElementById('noResults').classList.toggle('hidden', filtered.length > 0);
+            filtered.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-all border-b border-slate-50";
+                tr.innerHTML = `
+                    <td class="px-6 py-5 font-black text-indigo-600 tracking-tighter text-lg">#${String(t.id).padStart(3, '0')}</td>
+                    <td class="px-6 py-5"><span class="bg-indigo-600 text-white px-3 py-1 rounded-full text-[10px] font-black">${t.turno}</span></td>
+                    <td class="px-6 py-5 font-bold text-slate-700">${t.tipo}</td>
+                    <td class="px-6 py-5 text-right font-black text-xl text-slate-900">${t.peso} kg</td>
+                    <td class="px-6 py-5 text-center space-x-1">
+                        <button onclick='viewTicketById(${t.id})' class="p-3 bg-slate-100 text-slate-500 rounded-2xl hover:bg-indigo-600 hover:text-white transition-all">👁️</button>
+                        <button onclick='deleteTicket(${t.id})' class="p-3 bg-red-50 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all">🗑️</button>
+                    </td>
+                `;
+                historyBody.appendChild(tr);
+            });
         }
 
-        // --- TICKET VISUALIZER ---
         function openTicket(tique) {
             document.getElementById('v-id').innerText = `#${String(tique.id).padStart(3, '0')}`;
             document.getElementById('v-fecha').innerText = tique.fecha;
@@ -330,57 +349,57 @@
 
             const qrBox = document.getElementById('qrcode');
             qrBox.innerHTML = '';
-            const qrContent = `ID:${tique.id}|FECHA:${tique.fecha}|TURNO:${tique.turno}|LINEA:${tique.linea}|TIPO:${tique.tipo}|PESO:${tique.peso}KG`;
             
+            // Lógica de URL para el escaneo:
+            // Creamos un enlace que contiene los datos del tique codificados en base64
+            const rawData = `${tique.id}|${tique.fecha}|${tique.turno}|${tique.linea}|${tique.tipo}|${tique.peso}`;
+            const encodedData = btoa(rawData);
+            const currentURL = window.location.href.split('?')[0];
+            const scanURL = `${currentURL}?data=${encodedData}`;
+
             new QRCode(qrBox, {
-                text: qrContent,
+                text: scanURL,
                 width: 180,
                 height: 180,
                 colorDark: "#000000",
-                correctLevel: QRCode.CorrectLevel.H
+                correctLevel: QRCode.CorrectLevel.M
             });
 
             setTimeout(() => {
-                const printableArea = document.getElementById('printable-area');
-                printableArea.innerHTML = '';
-                const clone = document.getElementById('ticket-capture').cloneNode(true);
-                printableArea.appendChild(clone);
+                const printArea = document.getElementById('printable-area');
+                printArea.innerHTML = '';
+                printArea.appendChild(document.getElementById('ticket-capture').cloneNode(true));
             }, 200);
 
             document.getElementById('modal').classList.remove('hidden');
         }
 
         function viewTicketById(id) {
-            const found = tickets.find(t => t.id === id);
-            if (found) openTicket(found);
+            const t = tickets.find(t => t.id === id);
+            if (t) openTicket(t);
         }
 
         function deleteTicket(id) {
-            if (confirm(`¿Eliminar permanentemente el tique #${id}?`)) {
+            if (confirm(`¿Eliminar tique #${id}?`)) {
                 tickets = tickets.filter(t => t.id !== id);
                 syncDB();
             }
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-        }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         async function downloadTicket() {
             const element = document.getElementById('ticket-capture');
             const canvas = await html2canvas(element, { scale: 3 });
-            const dataUrl = canvas.toDataURL("image/png");
             const link = document.createElement('a');
-            link.download = `tique_${document.getElementById('v-id').innerText}.png`;
-            link.href = dataUrl;
+            link.download = `paleta_${document.getElementById('v-id').innerText}.png`;
+            link.href = canvas.toDataURL("image/png");
             link.click();
         }
 
-        searchInput.onchange = () => {
-            renderHistory();
-            updateStats();
-        };
-
+        searchInput.onchange = () => { renderHistory(); updateStats(); };
+        
+        checkScan(); // Revisar si el usuario está entrando por un QR
         syncDB();
     </script>
 </body>
