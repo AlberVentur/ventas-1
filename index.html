@@ -1,437 +1,357 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R7 - Control de Producción</title>
+    <title>Sistema de Control de Desperdicios</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap');
-        
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .logo-r7 { font-family: 'Orbitron', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white; }
-            @page { size: landscape; margin: 0; }
-            #printable-area { display: flex !important; justify-content: center; align-items: center; height: 100vh; }
-        }
-        
-        .print-only { display: none; }
-        
-        /* TIQUE HORIZONTAL R7 */
-        .ticket-r7 {
-            width: 800px;
-            height: 350px;
-            background: white;
-            border: 4px solid #000;
-            display: flex;
-            padding: 20px;
-            color: #000;
-            position: relative;
-        }
-
-        .ticket-main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding-right: 20px;
-        }
-
-        .ticket-qr-section {
-            width: 200px;
-            border-left: 2px dashed #ccc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding-left: 20px;
-        }
-
-        #mobile-view {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff;
-            z-index: 9999;
-            padding: 20px;
-            overflow-y: auto;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+        body { font-family: 'Montserrat', sans-serif; background-color: #f1f5f9; }
+        .sidebar-item-active { background-color: #0f172a; color: #fbbf24; border-left: 5px solid #fbbf24; }
+        .input-cantidad { font-size: 2rem; font-weight: 900; text-align: center; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body>
+<body class="flex min-h-screen overflow-hidden">
 
-    <!-- VISTA ESCANEO MÓVIL R7 -->
-    <div id="mobile-view" class="flex flex-col items-center">
-        <div class="w-full max-w-md bg-slate-900 rounded-[2.5rem] text-white shadow-2xl overflow-hidden mt-4">
-            <div class="p-8 text-center border-b border-slate-800">
-                <div class="logo-r7 text-4xl mb-2 text-indigo-500 italic">R7</div>
-                <h2 class="text-xl font-black">FICHA DIGITAL #<span id="m-id">000</span></h2>
-                <p id="m-datetime" class="text-[10px] opacity-50 mt-1">--</p>
-            </div>
-            
-            <div class="p-8 space-y-6">
-                <div>
-                    <p class="text-[10px] font-bold text-indigo-400 uppercase mb-3">Material Registrado</p>
-                    <p id="m-material" class="text-2xl font-black italic">--</p>
-                </div>
-
-                <div class="bg-slate-800 p-4 rounded-2xl">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-3">Detalle de Tandas</p>
-                    <div id="m-tandas-list" class="space-y-2"></div>
-                </div>
-                
-                <div class="text-center py-4">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Paletizado</p>
-                    <p id="m-total" class="text-6xl font-black text-white italic">0.00 KG</p>
-                </div>
-            </div>
-            <button onclick="window.location.search=''" class="m-8 mt-0 w-[calc(100%-4rem)] bg-indigo-600 py-4 rounded-2xl font-black uppercase text-xs">Finalizar Lectura</button>
+    <!-- MENU LATERAL -->
+    <aside class="w-72 bg-slate-800 text-white flex flex-col shrink-0 shadow-2xl">
+        <div class="p-8 text-center border-b border-slate-700">
+            <h1 class="text-2xl font-black tracking-tighter text-yellow-400">CONTROL PROD</h1>
+            <p class="text-[10px] opacity-50 font-bold uppercase tracking-[0.2em]">Registro de Planta</p>
         </div>
-    </div>
-
-    <!-- PANEL PRINCIPAL R7 -->
-    <div id="main-content" class="max-w-[1500px] mx-auto py-6 px-4 no-print">
         
-        <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-            <div class="flex items-center gap-4">
-                <div class="logo-r7 text-5xl font-black text-slate-900 italic tracking-tighter">R7</div>
-                <div class="h-10 w-px bg-slate-200"></div>
-                <div>
-                    <h1 class="text-lg font-black text-slate-800 leading-none">Control de Producción</h1>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Gestión de Trazabilidad Industrial</p>
+        <nav class="flex-1 p-4 space-y-3 mt-6">
+            <button onclick="changeView('dash')" id="nav-dash" class="w-full flex items-center gap-4 p-4 rounded-xl sidebar-item-active transition-all font-bold group">
+                <span class="text-xl">📊</span> Ver Gráficas
+            </button>
+            <button onclick="changeView('form')" id="nav-form" class="w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-slate-700 hover:text-white transition-all font-bold">
+                <span class="text-xl">✍️</span> Escribir Cantidades
+            </button>
+            <button onclick="changeView('history')" id="nav-history" class="w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-slate-700 hover:text-white transition-all font-bold">
+                <span class="text-xl">📅</span> Historial / Meses
+            </button>
+        </nav>
+
+        <div class="p-6">
+            <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
+                <p class="text-[10px] text-slate-500 font-bold mb-2">SISTEMA OK</p>
+                <div class="flex items-center gap-2">
+                    <div class="h-2 w-2 bg-green-500 rounded-full animate-ping"></div>
+                    <span class="text-xs font-bold text-slate-300">Datos Guardados Local</span>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="text-[10px] font-black text-indigo-600 uppercase mb-1">Correlativo</p>
-                <p id="next-id-label" class="text-4xl font-black font-mono">#001</p>
+        </div>
+    </aside>
+
+    <!-- CUERPO DE LA APP -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- CABECERA -->
+        <header class="bg-white p-6 border-b flex justify-between items-center shadow-sm">
+            <div>
+                <h2 id="title-text" class="text-xl font-black text-slate-800 uppercase tracking-tight">Panel de Resultados</h2>
+                <p class="text-xs text-slate-400 font-bold uppercase" id="current-date-display">Cargando fecha...</p>
+            </div>
+
+            <!-- FILTRO POR MES/SEMANA -->
+            <div class="flex items-center gap-4">
+                <div class="bg-slate-100 p-1 rounded-xl flex">
+                    <button onclick="setFilter('all')" class="filter-btn px-4 py-2 text-xs font-bold rounded-lg bg-white shadow-sm">Todo</button>
+                    <button onclick="setFilter('month')" class="filter-btn px-4 py-2 text-xs font-bold rounded-lg text-slate-500">Este Mes</button>
+                </div>
             </div>
         </header>
 
-        <!-- DASHBOARD EN TIEMPO REAL -->
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8" id="totalsGrid"></div>
+        <!-- AREA DE TRABAJO -->
+        <section class="flex-1 overflow-y-auto p-8 bg-slate-100/50">
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <!-- FORMULARIO R7 -->
-            <aside class="lg:col-span-4">
-                <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 sticky top-6">
-                    <form id="entryForm" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="col-span-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase">Línea de Proceso</label>
-                                <select id="linea" class="w-full p-3 bg-slate-50 border-0 rounded-xl font-bold mt-1">
-                                    <option>LPL01</option><option>LPL02</option><option>LFI01</option><option>LFI02</option><option>LPC02</option>
+            <!-- VISTA 1: GRAFICAS -->
+            <div id="view-dash" class="space-y-8 animate-in">
+                <!-- RESUMEN NUMERICO -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-card p-8 border-l-[12px] border-red-500 shadow-xl bg-white">
+                        <p class="text-xs font-black text-slate-400 uppercase">Total Desperdicio</p>
+                        <h3 id="kpi-desperdicio" class="text-5xl font-black text-slate-900 mt-2">0</h3>
+                        <p class="text-xs text-red-500 font-bold mt-2 italic">Cantidad no recuperable</p>
+                    </div>
+                    <div class="glass-card p-8 border-l-[12px] border-yellow-400 shadow-xl bg-white">
+                        <p class="text-xs font-black text-slate-400 uppercase">Total Reproceso</p>
+                        <h3 id="kpi-reproceso" class="text-5xl font-black text-slate-900 mt-2">0</h3>
+                        <p class="text-xs text-yellow-600 font-bold mt-2 italic">Material para re-trabajar</p>
+                    </div>
+                    <div class="glass-card p-8 border-l-[12px] border-slate-800 shadow-xl bg-white">
+                        <p class="text-xs font-black text-slate-400 uppercase">Días Medidos</p>
+                        <h3 id="kpi-dias" class="text-5xl font-black text-slate-900 mt-2">0</h3>
+                        <p class="text-xs text-slate-400 font-bold mt-2 italic">Registros en el sistema</p>
+                    </div>
+                </div>
+
+                <!-- GRAFICAS REALES -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-card p-8 bg-white shadow-lg">
+                        <h4 class="text-sm font-black text-slate-800 uppercase mb-6 flex items-center gap-2">
+                            <span>📈</span> Comparativa por Supervisor
+                        </h4>
+                        <div class="h-80"><canvas id="mainChart"></canvas></div>
+                    </div>
+                    <div class="glass-card p-8 bg-white shadow-lg text-center">
+                        <h4 class="text-sm font-black text-slate-800 uppercase mb-6">Distribución por Tanda</h4>
+                        <div class="h-64 flex justify-center items-center">
+                            <canvas id="tandaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 2: FORMULARIO (DONDE ESCRIBES LAS CANTIDADES) -->
+            <div id="view-form" class="hidden max-w-4xl mx-auto">
+                <div class="bg-white rounded-[32px] p-12 shadow-2xl border border-slate-200">
+                    <div class="mb-10 text-center">
+                        <span class="text-4xl">📝</span>
+                        <h3 class="text-3xl font-black text-slate-900 mt-4 tracking-tighter uppercase">Hoja de Registro Diaria</h3>
+                        <p class="text-slate-500 font-medium">Ingresa las cantidades exactas recolectadas en la planta</p>
+                    </div>
+
+                    <form id="form-data" class="space-y-10">
+                        <!-- DATOS GENERALES -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-2xl">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Fecha</label>
+                                <input type="date" id="in-date" required class="w-full p-3 rounded-xl border border-slate-200 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Tanda / Turno</label>
+                                <select id="in-tanda" required class="w-full p-3 rounded-xl border border-slate-200 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="Mañana">Mañana (06-14)</option>
+                                    <option value="Tarde">Tarde (14-22)</option>
+                                    <option value="Noche">Noche (22-06)</option>
                                 </select>
                             </div>
-                            
-                            <!-- TANDAS -->
-                            <div class="col-span-2 p-4 bg-indigo-50 rounded-2xl border border-indigo-100 space-y-3">
-                                <p class="text-[9px] font-black text-indigo-400 uppercase">Registro de Tandas</p>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <select id="t1_name" class="p-2 rounded-lg font-bold text-xs"><option>A1</option><option>A2</option><option>A3</option><option>B1</option><option>B2</option><option>B3</option><option>C1</option><option>C2</option><option>C3</option></select>
-                                    <input type="number" id="t1_val" step="0.01" class="p-2 rounded-lg font-bold text-xs" placeholder="Peso 1">
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <select id="t2_name" class="p-2 rounded-lg font-bold text-xs"><option>A1</option><option>A2</option><option>A3</option><option selected>B1</option><option>B2</option><option>B3</option><option>C1</option><option>C2</option><option>C3</option></select>
-                                    <input type="number" id="t2_val" step="0.01" class="p-2 rounded-lg font-bold text-xs" placeholder="Peso 2">
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <select id="t3_name" class="p-2 rounded-lg font-bold text-xs"><option>A1</option><option>A2</option><option>A3</option><option>B1</option><option>B2</option><option>B3</option><option selected>C1</option><option>C2</option><option>C3</option></select>
-                                    <input type="number" id="t3_val" step="0.01" class="p-2 rounded-lg font-bold text-xs" placeholder="Peso 3">
-                                </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Supervisor</label>
+                                <input type="text" id="in-sup" required placeholder="Nombre" class="w-full p-3 rounded-xl border border-slate-200 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 uppercase">
                             </div>
                         </div>
 
-                        <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase">Categoría de Producto</label>
-                            <select id="tipo" class="w-full p-3 bg-slate-50 border-0 rounded-xl font-bold mt-1">
-                                <option>ESP</option><option>DESPERDICIO</option><option>MASA</option><option>HARINA</option><option>REPROCESO ESP</option><option>REPROCESO CÓDITO</option><option>REPROCESO DE FIDEO</option>
-                            </select>
+                        <!-- DONDE ESCRIBES LAS CANTIDADES -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- CANTIDAD DESPERDICIO -->
+                            <div class="bg-red-50 border-2 border-red-100 p-8 rounded-[24px] text-center space-y-4">
+                                <label class="block text-sm font-black text-red-600 uppercase tracking-widest">CANTIDAD DESPERDICIO</label>
+                                <div class="relative">
+                                    <input type="number" id="in-desp" step="0.01" required placeholder="0.00" class="input-cantidad w-full bg-white border-b-4 border-red-500 p-4 rounded-xl text-red-600 outline-none shadow-inner">
+                                    <span class="absolute right-4 bottom-4 text-xs font-black text-red-300">KG</span>
+                                </div>
+                                <p class="text-[10px] text-red-400 font-bold italic">Escribe aquí cuánto se botó hoy.</p>
+                            </div>
+
+                            <!-- CANTIDAD REPROCESO -->
+                            <div class="bg-yellow-50 border-2 border-yellow-100 p-8 rounded-[24px] text-center space-y-4">
+                                <label class="block text-sm font-black text-yellow-600 uppercase tracking-widest">CANTIDAD REPROCESO</label>
+                                <div class="relative">
+                                    <input type="number" id="in-repr" step="0.01" required placeholder="0.00" class="input-cantidad w-full bg-white border-b-4 border-yellow-500 p-4 rounded-xl text-yellow-600 outline-none shadow-inner">
+                                    <span class="absolute right-4 bottom-4 text-xs font-black text-yellow-300 font-bold">KG</span>
+                                </div>
+                                <p class="text-[10px] text-yellow-500 font-bold italic">Escribe aquí cuánto se va a re-procesar.</p>
+                            </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-600 transition-colors shadow-xl">Generar Tique R7</button>
+                        <button type="submit" class="w-full bg-slate-900 text-white font-black py-6 rounded-[20px] text-xl shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-4 group uppercase tracking-widest">
+                            <span>✅</span> GUARDAR Y ACTUALIZAR GRÁFICAS
+                        </button>
                     </form>
                 </div>
-            </aside>
+            </div>
 
-            <!-- BUSCADOR Y LISTADO R7 -->
-            <main class="lg:col-span-8 space-y-6">
-                <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 bg-slate-50 flex flex-wrap gap-4 justify-between items-center">
-                        <div class="flex gap-2">
-                            <input type="date" id="searchDate" class="p-2 rounded-xl bg-white border border-slate-200 text-xs font-bold">
-                            <input type="text" id="searchBox" placeholder="Buscar por código, línea o material..." class="p-2 rounded-xl bg-white border border-slate-200 text-xs font-bold w-64">
-                        </div>
-                        <span id="recordCount" class="text-[9px] font-black bg-slate-200 px-3 py-1 rounded-full uppercase">0 Registros</span>
+            <!-- VISTA 3: HISTORIAL -->
+            <div id="view-history" class="hidden animate-in">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border">
+                    <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
+                        <h4 class="font-black text-xs uppercase tracking-widest">Registro de Mediciones</h4>
+                        <button onclick="exportCSV()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[10px] font-bold">Descargar Excel (CSV)</button>
                     </div>
-                    <div class="max-h-[550px] overflow-y-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-left">
-                            <thead class="bg-slate-50 sticky top-0 border-b border-slate-200">
-                                <tr class="text-[9px] font-black text-slate-400 uppercase">
-                                    <th class="px-6 py-4">ID</th>
-                                    <th class="px-6 py-4">Hora</th>
-                                    <th class="px-6 py-4">Línea</th>
-                                    <th class="px-6 py-4">Material</th>
-                                    <th class="px-6 py-4 text-right">Peso Total</th>
-                                    <th class="px-6 py-4 text-center">Gestión</th>
+                            <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
+                                <tr>
+                                    <th class="p-5">Fecha</th>
+                                    <th class="p-5">Tanda</th>
+                                    <th class="p-5">Supervisor</th>
+                                    <th class="p-5 text-right">Desperdicio (kg)</th>
+                                    <th class="p-5 text-right">Reproceso (kg)</th>
+                                    <th class="p-5 text-center">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+                            <tbody id="table-body" class="divide-y divide-slate-100 font-bold text-sm text-slate-700">
+                                <!-- Datos JS -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
-            </main>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- NOTIFICACION -->
+    <div id="toast" class="fixed top-10 right-10 transform translate-x-[500px] transition-all duration-500 z-50 bg-slate-900 text-white p-6 rounded-2xl shadow-2xl flex items-center gap-4">
+        <div class="bg-green-500 p-2 rounded-full">✔️</div>
+        <div>
+            <p class="font-black text-xs uppercase">Datos Procesados</p>
+            <p class="text-[10px] text-slate-400">Las gráficas han sido actualizadas.</p>
         </div>
     </div>
-
-    <!-- MODAL TIQUE HORIZONTAL R7 -->
-    <div id="modal" class="fixed inset-0 bg-slate-900/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 no-print">
-        <div class="bg-white p-8 rounded-[3rem] max-w-5xl w-full">
-            <div class="flex justify-between items-center mb-6">
-                <div class="logo-r7 text-2xl italic">R7 <span class="text-sm font-sans font-bold text-slate-300 not-italic ml-2 uppercase tracking-widest">Documento de Planta</span></div>
-                <button onclick="closeModal()" class="text-3xl text-slate-300 hover:text-slate-900">&times;</button>
-            </div>
-
-            <div id="ticket-capture" class="ticket-r7 mx-auto">
-                <div class="ticket-main">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="logo-r7 text-5xl font-black italic">R7</div>
-                            <p class="text-[9px] font-black uppercase tracking-[0.3em] mt-1">Control de Calidad</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[9px] font-black text-slate-400 uppercase">Identificador</p>
-                            <p id="v-id" class="text-5xl font-black font-mono">#000</p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4 my-2 text-[11px] font-bold border-y-2 border-black py-2">
-                        <p>LÍNEA: <span id="v-linea" class="font-black uppercase">--</span></p>
-                        <p class="text-right">FECHA: <span id="v-fecha" class="font-black">--</span> | <span id="v-hora" class="font-black">--</span></p>
-                    </div>
-
-                    <div class="flex justify-between items-center">
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-black uppercase text-slate-400">Desglose de Producción (KG)</p>
-                            <div class="flex gap-4">
-                                <div><span id="v-t1-n" class="text-[10px] font-black block">--</span><span id="v-t1-v" class="text-lg font-black italic">0.00</span></div>
-                                <div><span id="v-t2-n" class="text-[10px] font-black block">--</span><span id="v-t2-v" class="text-lg font-black italic">0.00</span></div>
-                                <div><span id="v-t3-n" class="text-[10px] font-black block">--</span><span id="v-t3-v" class="text-lg font-black italic">0.00</span></div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[9px] font-black uppercase text-red-600">Total Paletizado</p>
-                            <p id="v-total" class="text-7xl font-black italic leading-none tracking-tighter">0.00 KG</p>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-end border-t border-slate-200 pt-2">
-                        <p id="v-material" class="text-xl font-black uppercase">--</p>
-                        <p class="text-[8px] font-bold opacity-30">SOFTWARE DE GESTIÓN R7 - VERSIÓN EMPRESARIAL</p>
-                    </div>
-                </div>
-                
-                <div class="ticket-qr-section">
-                    <div id="qrcode"></div>
-                    <p class="text-[8px] font-black text-center mt-4 text-slate-400 uppercase tracking-widest leading-relaxed">Escaneo de<br>Trazabilidad</p>
-                </div>
-            </div>
-
-            <div class="mt-8 flex gap-4 no-print">
-                <button onclick="window.print()" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Imprimir Registro</button>
-                <button onclick="downloadImage()" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Descargar Imagen</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="printable-area" class="print-only"></div>
 
     <script>
-        const categories = ['ESP', 'DESPERDICIO', 'MASA', 'HARINA', 'REPROCESO ESP', 'REPROCESO CÓDITO', 'REPROCESO DE FIDEO'];
-        let db = JSON.parse(localStorage.getItem('R7_DATABASE_V1')) || [];
-        
-        const form = document.getElementById('entryForm');
-        const searchBox = document.getElementById('searchBox');
-        const searchDate = document.getElementById('searchDate');
-        const tableBody = document.getElementById('tableBody');
-        const totalsGrid = document.getElementById('totalsGrid');
+        // BASE DE DATOS LOCAL
+        let dataStore = JSON.parse(localStorage.getItem('plant_data_v3')) || [];
+        let mainChart = null;
+        let tandaChart = null;
 
-        searchDate.valueAsDate = new Date();
-
-        function sync() {
-            localStorage.setItem('R7_DATABASE_V1', JSON.stringify(db));
-            render();
-        }
-
-        function render() {
-            const date = searchDate.value;
-            const term = searchBox.value.toLowerCase();
-            
-            const filtered = db.filter(r => {
-                const matchDate = r.fecha === date;
-                const matchTerm = r.linea.toLowerCase().includes(term) || 
-                                  r.tipo.toLowerCase().includes(term) || 
-                                  String(r.id).includes(term);
-                return matchDate && matchTerm;
-            });
-
-            // Monitor
-            const stats = {};
-            categories.forEach(c => stats[c] = 0);
-            filtered.forEach(r => stats[r.tipo] += parseFloat(r.total));
-
-            totalsGrid.innerHTML = '';
-            categories.forEach(c => {
-                const div = document.createElement('div');
-                div.className = "bg-white p-4 rounded-2xl border border-slate-100";
-                div.innerHTML = `<p class="text-[8px] font-black text-slate-400 uppercase mb-1">${c}</p><p class="text-base font-black text-slate-800">${stats[c].toFixed(2)}<span class="text-[9px] opacity-40 ml-1">kg</span></p>`;
-                totalsGrid.appendChild(div);
-            });
-
-            // Table
-            tableBody.innerHTML = '';
-            filtered.forEach(r => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition-all";
-                tr.innerHTML = `
-                    <td class="px-6 py-4 font-black text-indigo-600 font-mono">#${String(r.id).padStart(3, '0')}</td>
-                    <td class="px-6 py-4 text-[10px] font-bold text-slate-400 font-mono">${r.hora}</td>
-                    <td class="px-6 py-4 text-xs font-black uppercase text-slate-600">${r.linea}</td>
-                    <td class="px-6 py-4">
-                        <span class="text-[9px] font-black border border-slate-200 px-2 py-1 rounded-full uppercase text-slate-500">${r.tipo}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right font-black text-base text-slate-900">${r.total} kg</td>
-                    <td class="px-6 py-4 text-center flex justify-center gap-2">
-                        <button onclick='viewRecord(${r.id})' class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all">👁️</button>
-                        <button onclick='deleteRecord(${r.id})' class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center hover:bg-red-600 hover:text-white text-red-400 transition-all">🗑️</button>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
-
-            const lastId = db.length > 0 ? Math.max(...db.map(x => x.id)) : 0;
-            document.getElementById('next-id-label').innerText = `#${String(lastId + 1).padStart(3, '0')}`;
-            document.getElementById('recordCount').innerText = `${filtered.length} REGISTROS`;
-        }
-
-        form.onsubmit = (e) => {
-            e.preventDefault();
-            const t1v = parseFloat(document.getElementById('t1_val').value || 0);
-            const t2v = parseFloat(document.getElementById('t2_val').value || 0);
-            const t3v = parseFloat(document.getElementById('t3_val').value || 0);
-            const total = (t1v + t2v + t3v).toFixed(2);
-            
-            const now = new Date();
-            const hora = now.toLocaleTimeString('es-ES', { hour12: false });
-            const fecha = now.toISOString().split('T')[0];
-
-            const lastId = db.length > 0 ? Math.max(...db.map(x => x.id)) : 0;
-            const entry = {
-                id: lastId + 1,
-                linea: document.getElementById('linea').value,
-                t1_n: document.getElementById('t1_name').value, t1_v: t1v.toFixed(2),
-                t2_n: document.getElementById('t2_name').value, t2_v: t2v.toFixed(2),
-                t3_n: document.getElementById('t3_name').value, t3_v: t3v.toFixed(2),
-                total: total,
-                tipo: document.getElementById('tipo').value,
-                fecha: fecha,
-                hora: hora
-            };
-
-            db.unshift(entry);
-            sync();
-            openModal(entry);
-            form.reset();
+        window.onload = () => {
+            document.getElementById('current-date-display').innerText = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('in-date').valueAsDate = new Date();
+            initCharts();
+            updateUI();
         };
 
-        function deleteRecord(id) {
-            if(confirm("R7: ¿Confirma la eliminación de este registro?")) {
-                db = db.filter(x => x.id !== id);
-                sync();
-            }
-        }
-
-        function openModal(r) {
-            document.getElementById('v-id').innerText = `#${String(r.id).padStart(3, '0')}`;
-            document.getElementById('v-linea').innerText = r.linea;
-            document.getElementById('v-fecha').innerText = r.fecha;
-            document.getElementById('v-hora').innerText = r.hora;
-            document.getElementById('v-material').innerText = r.tipo;
-            document.getElementById('v-total').innerText = `${r.total} KG`;
-            document.getElementById('v-t1-n').innerText = `TANDA ${r.t1_n}`;
-            document.getElementById('v-t1-v').innerText = `${r.t1_v}`;
-            document.getElementById('v-t2-n').innerText = `TANDA ${r.t2_n}`;
-            document.getElementById('v-t2-v').innerText = `${r.t2_v}`;
-            document.getElementById('v-t3-n').innerText = `TANDA ${r.t3_n}`;
-            document.getElementById('v-t3-v').innerText = `${r.t3_v}`;
-
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = '';
+        // NAVEGACION
+        function changeView(viewId) {
+            ['dash', 'form', 'history'].forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+                document.getElementById(`nav-${id}`).className = "w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-slate-700 hover:text-white transition-all font-bold";
+            });
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.getElementById(`nav-${viewId}`).className = "w-full flex items-center gap-4 p-4 rounded-xl sidebar-item-active transition-all font-bold";
             
-            // Payload R7: id|linea|total|fecha|hora|tipo|tandas
-            const tandas = `${r.t1_n}:${r.t1_v},${r.t2_n}:${r.t2_v},${r.t3_n}:${r.t3_v}`;
-            const raw = `${r.id}|${r.linea}|${r.total}|${r.fecha}|${r.hora}|${r.tipo}|${tandas}`;
-            const encoded = btoa(unescape(encodeURIComponent(raw)));
-            const url = `${window.location.href.split('?')[0]}?s=${encoded}`;
-
-            new QRCode(qrContainer, { text: url, width: 140, height: 140, colorDark: "#000000" });
-
-            setTimeout(() => {
-                const printable = document.getElementById('printable-area');
-                printable.innerHTML = '';
-                printable.appendChild(document.getElementById('ticket-capture').cloneNode(true));
-            }, 500);
-
-            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('title-text').innerText = 
+                viewId === 'dash' ? 'Panel de Resultados' : (viewId === 'form' ? 'Escribir Cantidades' : 'Historial Mensual');
+            
+            if(viewId === 'dash') updateUI();
+            if(viewId === 'history') renderTable();
         }
 
-        function viewRecord(id) {
-            const found = db.find(x => x.id === id);
-            if(found) openModal(found);
+        // INICIALIZAR GRAFICAS
+        function initCharts() {
+            const ctxMain = document.getElementById('mainChart').getContext('2d');
+            mainChart = new Chart(ctxMain, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Desperdicio (kg)', data: [], backgroundColor: '#ef4444', borderRadius: 10 },
+                        { label: 'Reproceso (kg)', data: [], backgroundColor: '#fbbf24', borderRadius: 10 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+
+            const ctxTanda = document.getElementById('tandaChart').getContext('2d');
+            tandaChart = new Chart(ctxTanda, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mañana', 'Tarde', 'Noche'],
+                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#38bdf8', '#fbbf24', '#1e293b'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
+            });
         }
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        // PROCESAR FORMULARIO
+        document.getElementById('form-data').onsubmit = (e) => {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                date: document.getElementById('in-date').value,
+                tanda: document.getElementById('in-tanda').value,
+                supervisor: document.getElementById('in-sup').value.toUpperCase(),
+                desperdicio: parseFloat(document.getElementById('in-desp').value) || 0,
+                reproceso: parseFloat(document.getElementById('in-repr').value) || 0
+            };
 
-        async function downloadImage() {
-            const canvas = await html2canvas(document.getElementById('ticket-capture'), { scale: 3 });
-            const link = document.createElement('a');
-            link.download = `R7_REGISTRO_${document.getElementById('v-id').innerText}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+            dataStore.push(newItem);
+            localStorage.setItem('plant_data_v3', JSON.stringify(dataStore));
+            
+            // Efecto Visual
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-x-[500px]');
+            setTimeout(() => toast.classList.add('translate-x-[500px]'), 3000);
+            
+            e.target.reset();
+            document.getElementById('in-date').valueAsDate = new Date();
+            changeView('dash');
+        };
+
+        // ACTUALIZAR DASHBOARD
+        function updateUI() {
+            if (dataStore.length === 0) return;
+
+            const totalDesp = dataStore.reduce((a, b) => a + b.desperdicio, 0);
+            const totalRepr = dataStore.reduce((a, b) => a + b.reproceso, 0);
+            
+            document.getElementById('kpi-desperdicio').innerText = totalDesp.toFixed(1);
+            document.getElementById('kpi-reproceso').innerText = totalRepr.toFixed(1);
+            document.getElementById('kpi-dias').innerText = [...new Set(dataStore.map(d => d.date))].length;
+
+            // Datos por Supervisor para Gráfica
+            const sups = [...new Set(dataStore.map(d => d.supervisor))];
+            mainChart.data.labels = sups;
+            mainChart.data.datasets[0].data = sups.map(s => dataStore.filter(x => x.supervisor === s).reduce((a, b) => a + b.desperdicio, 0));
+            mainChart.data.datasets[1].data = sups.map(s => dataStore.filter(x => x.supervisor === s).reduce((a, b) => a + b.reproceso, 0));
+            mainChart.update();
+
+            // Datos por Tanda
+            const tandaVals = ['Mañana', 'Tarde', 'Noche'].map(t => 
+                dataStore.filter(x => x.tanda === t).reduce((a, b) => a + b.desperdicio + b.reproceso, 0)
+            );
+            tandaChart.data.datasets[0].data = tandaVals;
+            tandaChart.update();
         }
 
-        // QR DETECTOR
-        const params = new URLSearchParams(window.location.search);
-        if (params.has('s')) {
-            try {
-                const d = decodeURIComponent(escape(atob(params.get('s')))).split('|');
-                document.getElementById('main-content').style.display = 'none';
-                document.getElementById('mobile-view').style.display = 'flex';
-                document.getElementById('m-id').innerText = String(d[0]).padStart(3, '0');
-                document.getElementById('m-datetime').innerText = `REGISTRADO EL ${d[3]} A LAS ${d[4]}`;
-                document.getElementById('m-total').innerText = d[2] + " KG";
-                document.getElementById('m-material').innerText = d[5];
-                
-                const list = document.getElementById('m-tandas-list');
-                list.innerHTML = '';
-                d[6].split(',').forEach(t => {
-                    const [n, v] = t.split(':');
-                    list.innerHTML += `<div class="flex justify-between items-center py-2 border-b border-slate-700 last:border-0"><span class="font-bold text-[10px] text-slate-400">TANDA ${n}</span><span class="font-black">${v} KG</span></div>`;
-                });
-            } catch(e) { }
+        function renderTable() {
+            const body = document.getElementById('table-body');
+            body.innerHTML = dataStore.slice().reverse().map(row => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-5 text-slate-400 text-[11px]">${row.date}</td>
+                    <td class="p-5">
+                        <span class="px-3 py-1 rounded-full text-[10px] ${
+                            row.tanda === 'Mañana' ? 'bg-sky-100 text-sky-700' : 
+                            row.tanda === 'Tarde' ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-800 text-white'
+                        }">${row.tanda}</span>
+                    </td>
+                    <td class="p-5 uppercase tracking-tighter">${row.supervisor}</td>
+                    <td class="p-5 text-right text-red-600 font-black">${row.desperdicio.toFixed(2)}</td>
+                    <td class="p-5 text-right text-yellow-600 font-black">${row.reproceso.toFixed(2)}</td>
+                    <td class="p-5 text-center">
+                        <button onclick="borrar(${row.id})" class="text-red-300 hover:text-red-600 text-[10px]">BORRAR</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        searchDate.onchange = render;
-        searchBox.oninput = render;
-        sync();
+        function borrar(id) {
+            dataStore = dataStore.filter(x => x.id !== id);
+            localStorage.setItem('plant_data_v3', JSON.stringify(dataStore));
+            renderTable();
+            updateUI();
+        }
+
+        function exportCSV() {
+            let csv = "Fecha,Tanda,Supervisor,Desperdicio_KG,Reproceso_KG\n";
+            dataStore.forEach(r => csv += `${r.date},${r.tanda},${r.supervisor},${r.desperdicio},${r.reproceso}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'reporte_produccion.csv');
+            a.click();
+        }
     </script>
 </body>
 </html>
 
+```
