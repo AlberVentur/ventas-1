@@ -1,357 +1,1559 @@
-
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control de Desperdicios</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
-        body { font-family: 'Montserrat', sans-serif; background-color: #f1f5f9; }
-        .sidebar-item-active { background-color: #0f172a; color: #fbbf24; border-left: 5px solid #fbbf24; }
-        .input-cantidad { font-size: 2rem; font-weight: 900; text-align: center; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-    </style>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1,
+maximum-scale=1,
+user-scalable=no">
+
+<title>Football Challenge</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+html,body{
+
+    width:100%;
+    height:100%;
+
+    overflow:hidden;
+
+    background:#101820;
+
+    font-family:Arial,sans-serif;
+
+    touch-action:none;
+}
+
+body{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+}
+
+#game{
+
+    position:relative;
+
+    width:100vw;
+    height:100vh;
+
+    max-width:500px;
+
+    overflow:hidden;
+
+    background:#228b45;
+}
+
+
+/* =========================
+   ESTADIO
+========================= */
+
+#field{
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+
+    repeating-linear-gradient(
+        90deg,
+        #218b43 0px,
+        #218b43 45px,
+        #258f47 45px,
+        #258f47 90px
+    );
+}
+
+
+/* LÍNEAS DEL CAMPO */
+
+#line1{
+
+    position:absolute;
+
+    top:15%;
+
+    left:8%;
+
+    width:84%;
+
+    height:70%;
+
+    border:
+    3px solid
+    rgba(255,255,255,.85);
+}
+
+#centerLine{
+
+    position:absolute;
+
+    top:50%;
+
+    left:8%;
+
+    width:84%;
+
+    height:3px;
+
+    background:white;
+}
+
+
+/* =========================
+   PÚBLICO
+========================= */
+
+#stadium{
+
+    position:absolute;
+
+    top:0;
+
+    left:0;
+
+    width:100%;
+
+    height:22%;
+
+    background:
+    linear-gradient(
+        #192532,
+        #34495e
+    );
+
+    overflow:hidden;
+}
+
+.crowd{
+
+    position:absolute;
+
+    bottom:0;
+
+    width:100%;
+
+    height:70%;
+
+    background:
+
+    radial-gradient(
+        circle,
+        #eee 2px,
+        transparent 3px
+    );
+
+    background-size:14px 14px;
+
+    opacity:.8;
+}
+
+
+/* =========================
+   MARCADOR
+========================= */
+
+#scoreboard{
+
+    position:absolute;
+
+    top:15px;
+
+    left:5%;
+
+    width:90%;
+
+    height:70px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:10px 15px;
+
+    border-radius:18px;
+
+    background:
+    rgba(8,15,25,.92);
+
+    color:white;
+
+    z-index:20;
+
+    box-shadow:
+    0 5px 15px
+    rgba(0,0,0,.4);
+}
+
+.team{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    font-weight:bold;
+
+    font-size:13px;
+}
+
+.blue{
+
+    color:#2d8cff;
+}
+
+.red{
+
+    color:#ff4a4a;
+}
+
+#score{
+
+    font-size:30px;
+
+    font-weight:bold;
+}
+
+#level{
+
+    position:absolute;
+
+    top:92px;
+
+    left:50%;
+
+    transform:translateX(-50%);
+
+    padding:7px 18px;
+
+    border-radius:20px;
+
+    background:
+    rgba(0,0,0,.65);
+
+    color:white;
+
+    font-weight:bold;
+
+    z-index:20;
+}
+
+
+/* =========================
+   PORTERÍA
+========================= */
+
+#goal{
+
+    position:absolute;
+
+    top:23%;
+
+    left:12%;
+
+    width:76%;
+
+    height:19%;
+
+    border:
+    7px solid white;
+
+    border-bottom:
+    12px solid white;
+
+    background:
+
+    repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 18px,
+        rgba(255,255,255,.35) 19px,
+        transparent 20px
+    ),
+
+    repeating-linear-gradient(
+        0deg,
+        transparent 0,
+        transparent 18px,
+        rgba(255,255,255,.35) 19px,
+        transparent 20px
+    );
+
+    z-index:5;
+}
+
+
+/* =========================
+   PORTERO
+========================= */
+
+#goalkeeper{
+
+    position:absolute;
+
+    top:30%;
+
+    left:50%;
+
+    transform:
+    translateX(-50%);
+
+    width:45px;
+
+    height:70px;
+
+    border-radius:18px;
+
+    background:#19a85b;
+
+    z-index:10;
+
+    box-shadow:
+    0 5px 10px
+    rgba(0,0,0,.4);
+
+    transition:left .1s linear;
+}
+
+#goalkeeper:before{
+
+    content:"";
+
+    position:absolute;
+
+    top:-25px;
+
+    left:9px;
+
+    width:27px;
+
+    height:27px;
+
+    border-radius:50%;
+
+    background:#d79b73;
+}
+
+#goalkeeper:after{
+
+    content:"";
+
+    position:absolute;
+
+    top:20px;
+
+    left:-20px;
+
+    width:85px;
+
+    height:15px;
+
+    background:#19a85b;
+
+    border-radius:20px;
+}
+
+
+/* =========================
+   JUGADOR
+========================= */
+
+#player{
+
+    position:absolute;
+
+    bottom:18%;
+
+    left:50%;
+
+    transform:
+    translateX(-50%);
+
+    width:55px;
+
+    height:95px;
+
+    z-index:12;
+}
+
+.body{
+
+    position:absolute;
+
+    bottom:0;
+
+    left:9px;
+
+    width:37px;
+
+    height:60px;
+
+    border-radius:14px;
+
+    background:#1675e8;
+}
+
+.head{
+
+    position:absolute;
+
+    top:0;
+
+    left:14px;
+
+    width:27px;
+
+    height:27px;
+
+    border-radius:50%;
+
+    background:#c98964;
+}
+
+.number{
+
+    position:absolute;
+
+    top:27px;
+
+    left:13px;
+
+    color:white;
+
+    font-weight:bold;
+
+    font-size:18px;
+}
+
+
+/* =========================
+   BALÓN
+========================= */
+
+#ball{
+
+    position:absolute;
+
+    bottom:17%;
+
+    left:50%;
+
+    width:25px;
+
+    height:25px;
+
+    transform:
+    translateX(-50%);
+
+    border-radius:50%;
+
+    background:white;
+
+    border:
+    2px solid #222;
+
+    z-index:15;
+
+    transition:
+    left .12s linear,
+    bottom .12s linear;
+}
+
+
+/* =========================
+   GUÍA DE DISPARO
+========================= */
+
+#aim{
+
+    position:absolute;
+
+    bottom:29%;
+
+    left:50%;
+
+    width:5px;
+
+    height:160px;
+
+    background:
+    rgba(255,255,255,.65);
+
+    transform-origin:
+    bottom center;
+
+    transform:
+    translateX(-50%)
+    rotate(0deg);
+
+    border-radius:10px;
+
+    z-index:8;
+
+    pointer-events:none;
+}
+
+
+/* =========================
+   CONTROLES
+========================= */
+
+#controls{
+
+    position:absolute;
+
+    bottom:3%;
+
+    left:0;
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:
+    space-around;
+
+    align-items:center;
+
+    z-index:30;
+}
+
+.control{
+
+    width:75px;
+
+    height:75px;
+
+    border-radius:50%;
+
+    border:
+    3px solid
+    rgba(255,255,255,.5);
+
+    background:
+    rgba(0,0,0,.55);
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+    user-select:none;
+}
+
+.shoot{
+
+    width:90px;
+
+    height:90px;
+
+    background:
+    rgba(0,100,255,.8);
+
+    font-size:15px;
+}
+
+
+/* =========================
+   OBJETIVO
+========================= */
+
+#mission{
+
+    position:absolute;
+
+    bottom:15%;
+
+    left:50%;
+
+    transform:
+    translateX(-50%);
+
+    color:white;
+
+    background:
+    rgba(0,0,0,.55);
+
+    padding:7px 15px;
+
+    border-radius:20px;
+
+    font-weight:bold;
+
+    z-index:20;
+}
+
+
+/* =========================
+   MENÚ
+========================= */
+
+#menu{
+
+    position:absolute;
+
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,.55),
+        rgba(0,0,0,.75)
+    );
+
+    z-index:100;
+}
+
+.card{
+
+    width:85%;
+
+    max-width:350px;
+
+    padding:30px 20px;
+
+    text-align:center;
+
+    border-radius:25px;
+
+    background:
+    rgba(10,18,25,.96);
+
+    color:white;
+}
+
+.card h1{
+
+    font-size:32px;
+
+    margin-bottom:15px;
+}
+
+.card p{
+
+    color:#ddd;
+
+    margin-bottom:25px;
+
+    line-height:1.5;
+}
+
+#play{
+
+    padding:15px 40px;
+
+    border:0;
+
+    border-radius:30px;
+
+    background:#1683ff;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:bold;
+}
+
+
+/* =========================
+   MENSAJE
+========================= */
+
+#message{
+
+    position:absolute;
+
+    inset:0;
+
+    display:none;
+
+    justify-content:center;
+
+    align-items:center;
+
+    background:
+    rgba(0,0,0,.7);
+
+    z-index:90;
+}
+
+.messageBox{
+
+    width:80%;
+
+    padding:30px;
+
+    background:#101820;
+
+    border-radius:20px;
+
+    text-align:center;
+
+    color:white;
+}
+
+.messageBox h2{
+
+    font-size:30px;
+
+    margin-bottom:15px;
+}
+
+.messageBox button{
+
+    margin-top:20px;
+
+    padding:13px 25px;
+
+    border:0;
+
+    border-radius:20px;
+
+    background:#1683ff;
+
+    color:white;
+
+    font-weight:bold;
+}
+
+</style>
+
 </head>
-<body class="flex min-h-screen overflow-hidden">
 
-    <!-- MENU LATERAL -->
-    <aside class="w-72 bg-slate-800 text-white flex flex-col shrink-0 shadow-2xl">
-        <div class="p-8 text-center border-b border-slate-700">
-            <h1 class="text-2xl font-black tracking-tighter text-yellow-400">CONTROL PROD</h1>
-            <p class="text-[10px] opacity-50 font-bold uppercase tracking-[0.2em]">Registro de Planta</p>
-        </div>
-        
-        <nav class="flex-1 p-4 space-y-3 mt-6">
-            <button onclick="changeView('dash')" id="nav-dash" class="w-full flex items-center gap-4 p-4 rounded-xl sidebar-item-active transition-all font-bold group">
-                <span class="text-xl">📊</span> Ver Gráficas
-            </button>
-            <button onclick="changeView('form')" id="nav-form" class="w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-slate-700 hover:text-white transition-all font-bold">
-                <span class="text-xl">✍️</span> Escribir Cantidades
-            </button>
-            <button onclick="changeView('history')" id="nav-history" class="w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-slate-700 hover:text-white transition-all font-bold">
-                <span class="text-xl">📅</span> Historial / Meses
-            </button>
-        </nav>
+<body>
 
-        <div class="p-6">
-            <div class="bg-slate-900/50 p-4 rounded-2xl border border-slate-700">
-                <p class="text-[10px] text-slate-500 font-bold mb-2">SISTEMA OK</p>
-                <div class="flex items-center gap-2">
-                    <div class="h-2 w-2 bg-green-500 rounded-full animate-ping"></div>
-                    <span class="text-xs font-bold text-slate-300">Datos Guardados Local</span>
-                </div>
-            </div>
-        </div>
-    </aside>
+<div id="game">
 
-    <!-- CUERPO DE LA APP -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        
-        <!-- CABECERA -->
-        <header class="bg-white p-6 border-b flex justify-between items-center shadow-sm">
-            <div>
-                <h2 id="title-text" class="text-xl font-black text-slate-800 uppercase tracking-tight">Panel de Resultados</h2>
-                <p class="text-xs text-slate-400 font-bold uppercase" id="current-date-display">Cargando fecha...</p>
-            </div>
+<div id="field"></div>
 
-            <!-- FILTRO POR MES/SEMANA -->
-            <div class="flex items-center gap-4">
-                <div class="bg-slate-100 p-1 rounded-xl flex">
-                    <button onclick="setFilter('all')" class="filter-btn px-4 py-2 text-xs font-bold rounded-lg bg-white shadow-sm">Todo</button>
-                    <button onclick="setFilter('month')" class="filter-btn px-4 py-2 text-xs font-bold rounded-lg text-slate-500">Este Mes</button>
-                </div>
-            </div>
-        </header>
+<div id="stadium">
+<div class="crowd"></div>
+</div>
 
-        <!-- AREA DE TRABAJO -->
-        <section class="flex-1 overflow-y-auto p-8 bg-slate-100/50">
+<div id="line1"></div>
 
-            <!-- VISTA 1: GRAFICAS -->
-            <div id="view-dash" class="space-y-8 animate-in">
-                <!-- RESUMEN NUMERICO -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="glass-card p-8 border-l-[12px] border-red-500 shadow-xl bg-white">
-                        <p class="text-xs font-black text-slate-400 uppercase">Total Desperdicio</p>
-                        <h3 id="kpi-desperdicio" class="text-5xl font-black text-slate-900 mt-2">0</h3>
-                        <p class="text-xs text-red-500 font-bold mt-2 italic">Cantidad no recuperable</p>
-                    </div>
-                    <div class="glass-card p-8 border-l-[12px] border-yellow-400 shadow-xl bg-white">
-                        <p class="text-xs font-black text-slate-400 uppercase">Total Reproceso</p>
-                        <h3 id="kpi-reproceso" class="text-5xl font-black text-slate-900 mt-2">0</h3>
-                        <p class="text-xs text-yellow-600 font-bold mt-2 italic">Material para re-trabajar</p>
-                    </div>
-                    <div class="glass-card p-8 border-l-[12px] border-slate-800 shadow-xl bg-white">
-                        <p class="text-xs font-black text-slate-400 uppercase">Días Medidos</p>
-                        <h3 id="kpi-dias" class="text-5xl font-black text-slate-900 mt-2">0</h3>
-                        <p class="text-xs text-slate-400 font-bold mt-2 italic">Registros en el sistema</p>
-                    </div>
-                </div>
+<div id="centerLine"></div>
 
-                <!-- GRAFICAS REALES -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="glass-card p-8 bg-white shadow-lg">
-                        <h4 class="text-sm font-black text-slate-800 uppercase mb-6 flex items-center gap-2">
-                            <span>📈</span> Comparativa por Supervisor
-                        </h4>
-                        <div class="h-80"><canvas id="mainChart"></canvas></div>
-                    </div>
-                    <div class="glass-card p-8 bg-white shadow-lg text-center">
-                        <h4 class="text-sm font-black text-slate-800 uppercase mb-6">Distribución por Tanda</h4>
-                        <div class="h-64 flex justify-center items-center">
-                            <canvas id="tandaChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- VISTA 2: FORMULARIO (DONDE ESCRIBES LAS CANTIDADES) -->
-            <div id="view-form" class="hidden max-w-4xl mx-auto">
-                <div class="bg-white rounded-[32px] p-12 shadow-2xl border border-slate-200">
-                    <div class="mb-10 text-center">
-                        <span class="text-4xl">📝</span>
-                        <h3 class="text-3xl font-black text-slate-900 mt-4 tracking-tighter uppercase">Hoja de Registro Diaria</h3>
-                        <p class="text-slate-500 font-medium">Ingresa las cantidades exactas recolectadas en la planta</p>
-                    </div>
+<!-- MARCADOR -->
 
-                    <form id="form-data" class="space-y-10">
-                        <!-- DATOS GENERALES -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-2xl">
-                            <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Fecha</label>
-                                <input type="date" id="in-date" required class="w-full p-3 rounded-xl border border-slate-200 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Tanda / Turno</label>
-                                <select id="in-tanda" required class="w-full p-3 rounded-xl border border-slate-200 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="Mañana">Mañana (06-14)</option>
-                                    <option value="Tarde">Tarde (14-22)</option>
-                                    <option value="Noche">Noche (22-06)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Supervisor</label>
-                                <input type="text" id="in-sup" required placeholder="Nombre" class="w-full p-3 rounded-xl border border-slate-200 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 uppercase">
-                            </div>
-                        </div>
+<div id="scoreboard">
 
-                        <!-- DONDE ESCRIBES LAS CANTIDADES -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <!-- CANTIDAD DESPERDICIO -->
-                            <div class="bg-red-50 border-2 border-red-100 p-8 rounded-[24px] text-center space-y-4">
-                                <label class="block text-sm font-black text-red-600 uppercase tracking-widest">CANTIDAD DESPERDICIO</label>
-                                <div class="relative">
-                                    <input type="number" id="in-desp" step="0.01" required placeholder="0.00" class="input-cantidad w-full bg-white border-b-4 border-red-500 p-4 rounded-xl text-red-600 outline-none shadow-inner">
-                                    <span class="absolute right-4 bottom-4 text-xs font-black text-red-300">KG</span>
-                                </div>
-                                <p class="text-[10px] text-red-400 font-bold italic">Escribe aquí cuánto se botó hoy.</p>
-                            </div>
+<div class="team blue">
+TÚ
+<span>🔵</span>
+</div>
 
-                            <!-- CANTIDAD REPROCESO -->
-                            <div class="bg-yellow-50 border-2 border-yellow-100 p-8 rounded-[24px] text-center space-y-4">
-                                <label class="block text-sm font-black text-yellow-600 uppercase tracking-widest">CANTIDAD REPROCESO</label>
-                                <div class="relative">
-                                    <input type="number" id="in-repr" step="0.01" required placeholder="0.00" class="input-cantidad w-full bg-white border-b-4 border-yellow-500 p-4 rounded-xl text-yellow-600 outline-none shadow-inner">
-                                    <span class="absolute right-4 bottom-4 text-xs font-black text-yellow-300 font-bold">KG</span>
-                                </div>
-                                <p class="text-[10px] text-yellow-500 font-bold italic">Escribe aquí cuánto se va a re-procesar.</p>
-                            </div>
-                        </div>
+<div id="score">
+0 - 0
+</div>
 
-                        <button type="submit" class="w-full bg-slate-900 text-white font-black py-6 rounded-[20px] text-xl shadow-2xl hover:bg-black transition-all flex items-center justify-center gap-4 group uppercase tracking-widest">
-                            <span>✅</span> GUARDAR Y ACTUALIZAR GRÁFICAS
-                        </button>
-                    </form>
-                </div>
-            </div>
+<div class="team red">
+RIVAL
+<span>🔴</span>
+</div>
 
-            <!-- VISTA 3: HISTORIAL -->
-            <div id="view-history" class="hidden animate-in">
-                <div class="bg-white rounded-2xl shadow-xl overflow-hidden border">
-                    <div class="p-6 bg-slate-900 text-white flex justify-between items-center">
-                        <h4 class="font-black text-xs uppercase tracking-widest">Registro de Mediciones</h4>
-                        <button onclick="exportCSV()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[10px] font-bold">Descargar Excel (CSV)</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
-                                <tr>
-                                    <th class="p-5">Fecha</th>
-                                    <th class="p-5">Tanda</th>
-                                    <th class="p-5">Supervisor</th>
-                                    <th class="p-5 text-right">Desperdicio (kg)</th>
-                                    <th class="p-5 text-right">Reproceso (kg)</th>
-                                    <th class="p-5 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="table-body" class="divide-y divide-slate-100 font-bold text-sm text-slate-700">
-                                <!-- Datos JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+</div>
 
-        </section>
-    </main>
 
-    <!-- NOTIFICACION -->
-    <div id="toast" class="fixed top-10 right-10 transform translate-x-[500px] transition-all duration-500 z-50 bg-slate-900 text-white p-6 rounded-2xl shadow-2xl flex items-center gap-4">
-        <div class="bg-green-500 p-2 rounded-full">✔️</div>
-        <div>
-            <p class="font-black text-xs uppercase">Datos Procesados</p>
-            <p class="text-[10px] text-slate-400">Las gráficas han sido actualizadas.</p>
-        </div>
-    </div>
+<div id="level">
+NIVEL 1
+</div>
 
-    <script>
-        // BASE DE DATOS LOCAL
-        let dataStore = JSON.parse(localStorage.getItem('plant_data_v3')) || [];
-        let mainChart = null;
-        let tandaChart = null;
 
-        window.onload = () => {
-            document.getElementById('current-date-display').innerText = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            document.getElementById('in-date').valueAsDate = new Date();
-            initCharts();
-            updateUI();
-        };
+<!-- PORTERÍA -->
 
-        // NAVEGACION
-        function changeView(viewId) {
-            ['dash', 'form', 'history'].forEach(id => {
-                document.getElementById(`view-${id}`).classList.add('hidden');
-                document.getElementById(`nav-${id}`).className = "w-full flex items-center gap-4 p-4 rounded-xl text-slate-400 hover:bg-slate-700 hover:text-white transition-all font-bold";
-            });
-            document.getElementById(`view-${viewId}`).classList.remove('hidden');
-            document.getElementById(`nav-${viewId}`).className = "w-full flex items-center gap-4 p-4 rounded-xl sidebar-item-active transition-all font-bold";
-            
-            document.getElementById('title-text').innerText = 
-                viewId === 'dash' ? 'Panel de Resultados' : (viewId === 'form' ? 'Escribir Cantidades' : 'Historial Mensual');
-            
-            if(viewId === 'dash') updateUI();
-            if(viewId === 'history') renderTable();
-        }
+<div id="goal"></div>
 
-        // INICIALIZAR GRAFICAS
-        function initCharts() {
-            const ctxMain = document.getElementById('mainChart').getContext('2d');
-            mainChart = new Chart(ctxMain, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [
-                        { label: 'Desperdicio (kg)', data: [], backgroundColor: '#ef4444', borderRadius: 10 },
-                        { label: 'Reproceso (kg)', data: [], backgroundColor: '#fbbf24', borderRadius: 10 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-            });
+<div id="goalkeeper"></div>
 
-            const ctxTanda = document.getElementById('tandaChart').getContext('2d');
-            tandaChart = new Chart(ctxTanda, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Mañana', 'Tarde', 'Noche'],
-                    datasets: [{ data: [0, 0, 0], backgroundColor: ['#38bdf8', '#fbbf24', '#1e293b'], borderWidth: 0 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '75%' }
-            });
-        }
 
-        // PROCESAR FORMULARIO
-        document.getElementById('form-data').onsubmit = (e) => {
-            e.preventDefault();
-            const newItem = {
-                id: Date.now(),
-                date: document.getElementById('in-date').value,
-                tanda: document.getElementById('in-tanda').value,
-                supervisor: document.getElementById('in-sup').value.toUpperCase(),
-                desperdicio: parseFloat(document.getElementById('in-desp').value) || 0,
-                reproceso: parseFloat(document.getElementById('in-repr').value) || 0
-            };
+<!-- JUGADOR -->
 
-            dataStore.push(newItem);
-            localStorage.setItem('plant_data_v3', JSON.stringify(dataStore));
-            
-            // Efecto Visual
-            const toast = document.getElementById('toast');
-            toast.classList.remove('translate-x-[500px]');
-            setTimeout(() => toast.classList.add('translate-x-[500px]'), 3000);
-            
-            e.target.reset();
-            document.getElementById('in-date').valueAsDate = new Date();
-            changeView('dash');
-        };
+<div id="player">
 
-        // ACTUALIZAR DASHBOARD
-        function updateUI() {
-            if (dataStore.length === 0) return;
+<div class="head"></div>
 
-            const totalDesp = dataStore.reduce((a, b) => a + b.desperdicio, 0);
-            const totalRepr = dataStore.reduce((a, b) => a + b.reproceso, 0);
-            
-            document.getElementById('kpi-desperdicio').innerText = totalDesp.toFixed(1);
-            document.getElementById('kpi-reproceso').innerText = totalRepr.toFixed(1);
-            document.getElementById('kpi-dias').innerText = [...new Set(dataStore.map(d => d.date))].length;
+<div class="body"></div>
 
-            // Datos por Supervisor para Gráfica
-            const sups = [...new Set(dataStore.map(d => d.supervisor))];
-            mainChart.data.labels = sups;
-            mainChart.data.datasets[0].data = sups.map(s => dataStore.filter(x => x.supervisor === s).reduce((a, b) => a + b.desperdicio, 0));
-            mainChart.data.datasets[1].data = sups.map(s => dataStore.filter(x => x.supervisor === s).reduce((a, b) => a + b.reproceso, 0));
-            mainChart.update();
+<div class="number">
+10
+</div>
 
-            // Datos por Tanda
-            const tandaVals = ['Mañana', 'Tarde', 'Noche'].map(t => 
-                dataStore.filter(x => x.tanda === t).reduce((a, b) => a + b.desperdicio + b.reproceso, 0)
+</div>
+
+
+<!-- BALÓN -->
+
+<div id="ball"></div>
+
+
+<!-- GUÍA -->
+
+<div id="aim"></div>
+
+
+<!-- OBJETIVO -->
+
+<div id="mission">
+GOLES: 0 / 3
+</div>
+
+
+<!-- CONTROLES -->
+
+<div id="controls">
+
+<div
+class="control"
+id="left">
+◀
+</div>
+
+<div
+class="control shoot"
+id="shoot">
+⚽
+<br>
+DISPARAR
+</div>
+
+<div
+class="control"
+id="right">
+▶
+</div>
+
+</div>
+
+
+<!-- MENÚ -->
+
+<div id="menu">
+
+<div class="card">
+
+<h1>
+⚽ FOOTBALL
+<br>
+CHALLENGE
+</h1>
+
+<p>
+Supera los niveles,
+marca goles y vence
+al portero.
+</p>
+
+<button id="play">
+JUGAR
+</button>
+
+</div>
+
+</div>
+
+
+<!-- MENSAJE -->
+
+<div id="message">
+
+<div class="messageBox">
+
+<h2 id="messageTitle">
+¡GOL!
+</h2>
+
+<p id="messageText">
+</p>
+
+<button id="continue">
+CONTINUAR
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+
+/* =========================
+   VARIABLES
+========================= */
+
+let level=1;
+
+let goals=0;
+
+let rivalGoals=0;
+
+let targetGoals=3;
+
+let goalkeeperSpeed=2;
+
+let shooting=false;
+
+let ballMoving=false;
+
+let ballX=50;
+
+let keeperX=50;
+
+let playerX=50;
+
+
+/* =========================
+   ELEMENTOS
+========================= */
+
+const player=
+document.getElementById(
+"player"
+);
+
+const ball=
+document.getElementById(
+"ball"
+);
+
+const goalkeeper=
+document.getElementById(
+"goalkeeper"
+);
+
+const aim=
+document.getElementById(
+"aim"
+);
+
+const score=
+document.getElementById(
+"score"
+);
+
+const levelText=
+document.getElementById(
+"level"
+);
+
+const mission=
+document.getElementById(
+"mission"
+);
+
+const menu=
+document.getElementById(
+"menu"
+);
+
+const message=
+document.getElementById(
+"message"
+);
+
+const messageTitle=
+document.getElementById(
+"messageTitle"
+);
+
+const messageText=
+document.getElementById(
+"messageText"
+);
+
+
+/* =========================
+   INICIAR
+========================= */
+
+document
+.getElementById("play")
+.addEventListener(
+"click",
+startGame
+);
+
+
+function startGame(){
+
+    level=1;
+
+    goals=0;
+
+    rivalGoals=0;
+
+    targetGoals=3;
+
+    goalkeeperSpeed=2;
+
+    menu.style.display=
+    "none";
+
+    resetLevel();
+
+}
+
+
+/* =========================
+   REINICIAR NIVEL
+========================= */
+
+function resetLevel(){
+
+    ballMoving=false;
+
+    shooting=false;
+
+    playerX=50;
+
+    ballX=50;
+
+    keeperX=50;
+
+    player.style.left=
+    playerX+"%";
+
+    ball.style.left=
+    ballX+"%";
+
+    ball.style.bottom=
+    "17%";
+
+    goalkeeper.style.left=
+    keeperX+"%";
+
+    targetGoals=
+    2+level;
+
+    goalkeeperSpeed=
+    1.5+
+    level*.8;
+
+    updateHUD();
+
+}
+
+
+/* =========================
+   HUD
+========================= */
+
+function updateHUD(){
+
+    score.textContent=
+    goals+" - "+rivalGoals;
+
+    levelText.textContent=
+    "NIVEL "+level;
+
+    mission.textContent=
+    "GOLES: "+
+    goals+
+    " / "+
+    targetGoals;
+}
+
+
+/* =========================
+   MOVER JUGADOR
+========================= */
+
+function movePlayer(direction){
+
+    if(ballMoving)
+        return;
+
+    playerX +=
+    direction*5;
+
+    playerX=
+    Math.max(
+        15,
+        Math.min(
+            85,
+            playerX
+        )
+    );
+
+    player.style.left=
+    playerX+"%";
+
+    ballX=playerX;
+
+    ball.style.left=
+    ballX+"%";
+
+}
+
+
+/* =========================
+   BOTONES
+========================= */
+
+document
+.getElementById("left")
+.addEventListener(
+"touchstart",
+e=>{
+    e.preventDefault();
+    movePlayer(-1);
+}
+);
+
+document
+.getElementById("right")
+.addEventListener(
+"touchstart",
+e=>{
+    e.preventDefault();
+    movePlayer(1);
+}
+);
+
+
+/* =========================
+   DISPARO
+========================= */
+
+document
+.getElementById("shoot")
+.addEventListener(
+"touchstart",
+e=>{
+
+    e.preventDefault();
+
+    shootBall();
+
+}
+);
+
+
+/* TAMBIÉN PC */
+
+document
+.getElementById("shoot")
+.addEventListener(
+"mousedown",
+shootBall
+);
+
+
+/* =========================
+   DISPARAR
+========================= */
+
+function shootBall(){
+
+    if(ballMoving)
+        return;
+
+    ballMoving=true;
+
+    shooting=true;
+
+    let targetX=
+    keeperX;
+
+    /*
+    El jugador puede apuntar
+    ligeramente hacia los lados.
+    */
+
+    let direction=
+    playerX <
+    keeperX
+    ? -1
+    : 1;
+
+    /*
+    Probabilidad de que
+    el balón pase el portero.
+    */
+
+    let accuracy=
+    Math.random();
+
+    let goesIn=
+    accuracy >
+    0.35;
+
+
+    animateBall(
+    goesIn
+    );
+
+}
+
+
+/* =========================
+   ANIMAR BALÓN
+========================= */
+
+function animateBall(goesIn){
+
+    let start=17;
+
+    let end=65;
+
+    let progress=0;
+
+    let interval=
+    setInterval(()=>{
+
+        progress+=0.05;
+
+        let bottom=
+        start+
+        (end-start)*
+        progress;
+
+        ball.style.bottom=
+        bottom+"%";
+
+
+        if(progress>=1){
+
+            clearInterval(
+            interval
             );
-            tandaChart.data.datasets[0].data = tandaVals;
-            tandaChart.update();
+
+            ballMoving=false;
+
+            if(goesIn){
+
+                scoreGoal();
+
+            }else{
+
+                goalkeeperSave();
+
+            }
+
         }
 
-        function renderTable() {
-            const body = document.getElementById('table-body');
-            body.innerHTML = dataStore.slice().reverse().map(row => `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="p-5 text-slate-400 text-[11px]">${row.date}</td>
-                    <td class="p-5">
-                        <span class="px-3 py-1 rounded-full text-[10px] ${
-                            row.tanda === 'Mañana' ? 'bg-sky-100 text-sky-700' : 
-                            row.tanda === 'Tarde' ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-800 text-white'
-                        }">${row.tanda}</span>
-                    </td>
-                    <td class="p-5 uppercase tracking-tighter">${row.supervisor}</td>
-                    <td class="p-5 text-right text-red-600 font-black">${row.desperdicio.toFixed(2)}</td>
-                    <td class="p-5 text-right text-yellow-600 font-black">${row.reproceso.toFixed(2)}</td>
-                    <td class="p-5 text-center">
-                        <button onclick="borrar(${row.id})" class="text-red-300 hover:text-red-600 text-[10px]">BORRAR</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+    },30);
 
-        function borrar(id) {
-            dataStore = dataStore.filter(x => x.id !== id);
-            localStorage.setItem('plant_data_v3', JSON.stringify(dataStore));
-            renderTable();
-            updateUI();
-        }
+}
 
-        function exportCSV() {
-            let csv = "Fecha,Tanda,Supervisor,Desperdicio_KG,Reproceso_KG\n";
-            dataStore.forEach(r => csv += `${r.date},${r.tanda},${r.supervisor},${r.desperdicio},${r.reproceso}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('href', url);
-            a.setAttribute('download', 'reporte_produccion.csv');
-            a.click();
-        }
-    </script>
+
+/* =========================
+   GOL
+========================= */
+
+function scoreGoal(){
+
+    goals++;
+
+    updateHUD();
+
+    messageTitle.textContent=
+    "⚽ ¡GOOOOOOL!";
+
+    messageText.textContent=
+    "Has marcado. "+
+    goals+
+    " de "+
+    targetGoals+
+    " goles.";
+
+    message.style.display=
+    "flex";
+
+
+    if(goals>=targetGoals){
+
+        messageTitle.textContent=
+        "🏆 ¡NIVEL COMPLETADO!";
+
+        messageText.textContent=
+        "Prepárate para el nivel "+
+        (level+1)+".";
+    }
+
+}
+
+
+/* =========================
+   ATAJADA
+========================= */
+
+function goalkeeperSave(){
+
+    messageTitle.textContent=
+    "🧤 ¡ATAJÓ!";
+
+    messageText.textContent=
+    "El portero detuvo tu disparo.";
+
+    message.style.display=
+    "flex";
+
+
+    /*
+    El rival tiene una pequeña
+    posibilidad de marcar.
+    */
+
+    if(
+    Math.random()<
+    0.25
+    ){
+
+        rivalGoals++;
+
+        updateHUD();
+
+    }
+
+}
+
+
+/* =========================
+   CONTINUAR
+========================= */
+
+document
+.getElementById("continue")
+.addEventListener(
+"click",
+()=>{
+
+    message.style.display=
+    "none";
+
+
+    if(
+    goals>=targetGoals
+    ){
+
+        level++;
+
+        /*
+        Aumentamos dificultad.
+        */
+
+        targetGoals=
+        level+2;
+
+        goalkeeperSpeed+=
+        .8;
+
+        resetLevel();
+
+    }else{
+
+        resetBall();
+
+    }
+
+});
+
+
+/* =========================
+   REINICIAR BALÓN
+========================= */
+
+function resetBall(){
+
+    ball.style.bottom=
+    "17%";
+
+    ball.style.left=
+    playerX+"%";
+
+    ballX=playerX;
+
+}
+
+
+/* =========================
+   MOVER PORTERO
+========================= */
+
+function moveGoalkeeper(){
+
+    if(!ballMoving)
+        return;
+
+
+    /*
+    El portero se mueve
+    intentando seguir el balón.
+    */
+
+    if(
+    ballX>
+    keeperX
+    ){
+
+        keeperX+=
+        goalkeeperSpeed;
+
+    }else{
+
+        keeperX-=
+        goalkeeperSpeed;
+
+    }
+
+
+    keeperX=
+    Math.max(
+        25,
+        Math.min(
+            75,
+            keeperX
+        )
+    );
+
+
+    goalkeeper.style.left=
+    keeperX+"%";
+
+
+    requestAnimationFrame(
+    moveGoalkeeper
+    );
+
+}
+
+
+/* =========================
+   LOOP PORTERO
+========================= */
+
+setInterval(
+()=>{
+
+    if(ballMoving){
+
+        moveGoalkeeper();
+
+    }
+
+},
+50
+);
+
+
+/* =========================
+   CONTROL POR ARRASTRE
+========================= */
+
+let dragging=false;
+
+document
+.getElementById("game")
+.addEventListener(
+"touchmove",
+e=>{
+
+    if(ballMoving)
+        return;
+
+    const touch=
+    e.touches[0];
+
+    const rect=
+    document
+    .getElementById("game")
+    .getBoundingClientRect();
+
+    let percent=
+    (
+        (touch.clientX-
+        rect.left)/
+        rect.width
+    )*100;
+
+
+    playerX=
+    Math.max(
+        15,
+        Math.min(
+            85,
+            percent
+        )
+    );
+
+
+    ballX=playerX;
+
+    player.style.left=
+    playerX+"%";
+
+    ball.style.left=
+    ballX+"%";
+
+},
+{
+    passive:false
+}
+);
+
+
+/* =========================
+   TECLADO
+========================= */
+
+document
+.addEventListener(
+"keydown",
+e=>{
+
+    if(e.key==="ArrowLeft")
+        movePlayer(-1);
+
+    if(e.key==="ArrowRight")
+        movePlayer(1);
+
+    if(e.code==="Space")
+        shootBall();
+
+});
+
+
+</script>
+
 </body>
-</html>
 
-```
+</html>
