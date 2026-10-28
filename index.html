@@ -1,616 +1,672 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<meta name="referrer" content="strict-origin-when-cross-origin">
-
-<title>R7 ACADEMY | Curso de Inteligencia Artificial</title>
-
-<style>
-:root {
-  --fondo: #061810;
-  --panel: #102d20;
-  --verde: #4ade80;
-  --verdeOscuro: #15803d;
-  --texto: #f0fdf4;
-  --gris: #b4cbbd;
-  --borde: #28543a;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: var(--fondo);
-  color: var(--texto);
-}
-
-button, input {
-  font: inherit;
-}
-
-button {
-  background: var(--verdeOscuro);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 13px 20px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: .2s;
-}
-
-button:hover:not(:disabled) {
-  background: #16a34a;
-}
-
-button:disabled {
-  background: #365448;
-  color: #a1b4a8;
-  cursor: not-allowed;
-}
-
-input {
-  width: 100%;
-  padding: 14px;
-  margin: 10px 0 17px;
-  border: 1px solid var(--borde);
-  border-radius: 10px;
-  background: #081d13;
-  color: white;
-  outline: none;
-}
-
-input:focus {
-  border-color: var(--verde);
-}
-
-h1, h2, h3 {
-  line-height: 1.3;
-}
-
-p {
-  color: var(--gris);
-  line-height: 1.6;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-/* INICIO DE SESIÓN */
-
-#loginScreen {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  background: radial-gradient(circle at top, #174d2c, #061810 65%);
-}
-
-.login-box {
-  width: 100%;
-  max-width: 430px;
-  background: var(--panel);
-  border: 1px solid var(--borde);
-  border-radius: 20px;
-  padding: 35px;
-  box-shadow: 0 20px 55px #0008;
-}
-
-.logo {
-  color: var(--verde);
-  font-size: 27px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.login-box .logo,
-.login-box h2,
-.login-subtitle {
-  text-align: center;
-}
-
-.login-box label {
-  color: #dcfce7;
-  font-size: 14px;
-}
-
-.login-box button {
-  width: 100%;
-  background: #16a34a;
-}
-
-.error {
-  color: #fda4af;
-  text-align: center;
-  min-height: 20px;
-  font-size: 14px;
-}
-
-/* PANEL */
-
-header {
-  background: #0c2418;
-  border-bottom: 1px solid var(--borde);
-  padding: 20px 5%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-}
-
-header .logo {
-  font-size: 21px;
-}
-
-.logout {
-  background: #9f2424;
-}
-
-.container {
-  max-width: 1150px;
-  margin: auto;
-  padding: 30px 20px;
-}
-
-.hero {
-  background: linear-gradient(120deg, #14532d, #0c2c1d);
-  border: 1px solid #287846;
-  padding: 35px;
-  border-radius: 20px;
-  margin-bottom: 30px;
-}
-
-.hero h1 {
-  font-size: clamp(25px, 4vw, 38px);
-}
-
-.hero p {
-  color: #d1fae5;
-}
-
-.tag {
-  display: inline-block;
-  background: #1f6c3c;
-  color: #dcfce7;
-  padding: 8px 14px;
-  border-radius: 30px;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-/* PROGRESO */
-
-.progress-box {
-  background: var(--panel);
-  border: 1px solid var(--borde);
-  border-radius: 17px;
-  padding: 25px;
-  margin-bottom: 35px;
-}
-
-.progress {
-  height: 14px;
-  background: #31513d;
-  border-radius: 20px;
-  overflow: hidden;
-}
-
-#progressBar {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #16a34a, #86efac);
-  transition: width .3s;
-}
-
-/* MÓDULOS */
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-  margin-top: 25px;
-}
-
-.card {
-  background: var(--panel);
-  border: 1px solid var(--borde);
-  border-radius: 17px;
-  padding: 25px;
-  transition: .2s;
-}
-
-.card:not(.locked):hover {
-  border-color: var(--verde);
-  transform: translateY(-3px);
-}
-
-.card h3 {
-  color: #bbf7d0;
-}
-
-.card button {
-  width: 100%;
-  margin-top: 12px;
-}
-
-.card-icon {
-  font-size: 34px;
-}
-
-.locked {
-  opacity: .62;
-}
-
-.status {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.available {
-  color: #4ade80;
-}
-
-.blocked {
-  color: #fca5a5;
-}
-
-/* REPRODUCTOR */
-
-#lessonSection {
-  background: var(--panel);
-  border: 1px solid var(--borde);
-  border-radius: 17px;
-  padding: 25px;
-  margin-top: 35px;
-}
-
-#lessonSection h2 {
-  color: #bbf7d0;
-}
-
-.video-wrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  margin: 20px 0;
-}
-
-.video-wrapper iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.video-notice {
-  font-size: 13px;
-  color: #b4cbbd;
-  margin-bottom: 20px;
-}
-
-.complete-btn {
-  background: #16a34a;
-}
-
-footer {
-  text-align: center;
-  padding: 30px;
-  color: #94b4a0;
-  border-top: 1px solid var(--borde);
-  margin-top: 35px;
-}
-
-@media(max-width: 600px) {
-  .login-box { padding: 25px; }
-  .hero { padding: 23px; }
-  header .logo { font-size: 18px; }
-  .container { padding: 20px 15px; }
-  #lessonSection { padding: 15px; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Lotería Dominicano - POS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
 </head>
+<body class="bg-slate-900 text-slate-800 antialiased min-h-screen flex items-center justify-center p-2 sm:p-4">
 
-<body>
+    <!-- Custom Message Box (Replaces alert() / confirm()) -->
+    <div id="custom-msg-box" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-6 shadow-2xl space-y-4 border border-slate-200 text-center">
+            <div id="custom-msg-icon" class="text-3xl">⚠️</div>
+            <h4 id="custom-msg-title" class="font-black text-base text-slate-900">Aviso del Sistema</h4>
+            <p id="custom-msg-text" class="text-xs text-slate-600">Mensaje aquí...</p>
+            <button onclick="cerrarMsgBox()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition">Aceptar</button>
+        </div>
+    </div>
 
-<!-- INICIO DE SESIÓN -->
-<section id="loginScreen">
-  <div class="login-box">
-    <div class="logo">🎓 R7 ACADEMY</div>
-    <p class="login-subtitle">Aprende a crear videos con Inteligencia Artificial</p>
-    <h2>Iniciar sesión</h2>
-    <form id="loginForm">
-      <label for="username">Usuario</label>
-      <input id="username" type="text" placeholder="Introduce tu usuario" autocomplete="username" required>
-      <label for="password">Contraseña</label>
-      <input id="password" type="password" placeholder="Introduce tu contraseña" autocomplete="current-password" required>
-      <p id="loginError" class="error" role="alert"></p>
-      <button type="submit">ENTRAR A MI CURSO</button>
-    </form>
-  </div>
-</section>
+    <!-- Main POS Device Container -->
+    <div class="w-full max-w-md bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col justify-between h-[90vh] max-h-[900px] border border-slate-700 relative">
+        
+        <!-- Top Status Bar / Header (Without Balance as requested) -->
+        <div class="bg-slate-900 text-white px-4 py-3 flex justify-between items-center shadow-md shrink-0">
+            <div class="flex items-center space-x-2">
+                <span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-black tracking-wider shadow">★ 5580</span>
+                <span class="text-xs font-semibold text-slate-300 tracking-wide uppercase">POS Dominio</span>
+            </div>
+            <div class="text-right">
+                <span class="text-[10px] bg-slate-800 text-emerald-400 font-bold px-2.5 py-1 rounded-full border border-slate-700 uppercase tracking-wider">Terminal Activa</span>
+            </div>
+        </div>
 
-<!-- PANEL PRINCIPAL -->
-<div id="studentPanel" hidden>
-  <header>
-    <div class="logo">🎓 R7 ACADEMY</div>
-    <button class="logout" onclick="logout()">Cerrar sesión</button>
-  </header>
+        <!-- Navigation Tabs -->
+        <div class="flex bg-slate-100 border-b border-slate-200 text-[11px] font-semibold text-slate-600 shrink-0">
+            <button onclick="switchTab('jugada')" id="tab-jugada" class="flex-1 py-2.5 text-center border-b-2 border-blue-600 text-blue-600 bg-white transition font-bold">Jugada</button>
+            <button onclick="switchTab('sorteos')" id="tab-sorteos" class="flex-1 py-2.5 text-center border-b-2 border-transparent hover:text-slate-900 transition">Sorteos</button>
+            <button onclick="switchTab('ventas')" id="tab-ventas" class="flex-1 py-2.5 text-center border-b-2 border-transparent hover:text-slate-900 transition">Tickets</button>
+            <button onclick="switchTab('ganancias')" id="tab-ganancias" class="flex-1 py-2.5 text-center border-b-2 border-transparent hover:text-slate-900 transition">PyG</button>
+        </div>
 
-  <main class="container">
-    <section class="hero">
-      <span class="tag">CURSO DE INTELIGENCIA ARTIFICIAL</span>
-      <h1>Crea Videos con IA y Aprende a Ganar Dinero</h1>
-      <p>Aprende a crear canales, guiones, imágenes, videos profesionales y contenido para YouTube, TikTok y otras plataformas.</p>
-      <p id="welcome"></p>
-    </section>
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto flex flex-col bg-slate-50 relative">
 
-    <!-- PROGRESO -->
-    <section class="progress-box">
-      <h2>📊 Mi progreso</h2>
-      <p id="progressText">0 de 4 módulos completados</p>
-      <div class="progress">
-        <div id="progressBar"></div>
-      </div>
-      <p id="progressPercent">0%</p>
-    </section>
+            <!-- TAB 1: JUGADA & HORA MANUAL -->
+            <div id="content-jugada" class="flex flex-col h-full p-3 sm:p-4 space-y-3">
+                <!-- Sorteo Selection -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Sorteo:</label>
+                        <select id="sorteo-select" onchange="actualizarHoraPorDefecto()" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs sm:text-sm font-semibold shadow-sm focus:ring-2 focus:ring-blue-600 focus:outline-none">
+                            <option value="Quiniela Leidsa">Quiniela Leidsa</option>
+                            <option value="Lotería Nacional">Lotería Nacional</option>
+                            <option value="Gana Más">Gana Más</option>
+                            <option value="Quiniela Real">Quiniela Real</option>
+                            <option value="Quiniela Loteka Noche">Loteka Noche</option>
+                            <option value="Quiniela Loteka Día">Loteka Día</option>
+                            <option value="New York Tarde">New York Tarde</option>
+                            <option value="New York Noche">New York Noche</option>
+                            <option value="Florida Día">Florida Día</option>
+                            <option value="Florida Noche">Florida Noche</option>
+                            <option value="La Primera Día">La Primera Día</option>
+                            <option value="Primera Noche">Primera Noche</option>
+                            <option value="La Suerte Día">La Suerte Día</option>
+                            <option value="La Suerte Tarde">La Suerte Tarde</option>
+                            <option value="Lotedom Día">Lotedom Día</option>
+                            <option value="Anguila 10:00 AM">Anguila 10 AM</option>
+                            <option value="New Jersey Día">New Jersey Día</option>
+                            <option value="Lotería Real Noche">Lotería Real Noche</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Hora del Sorteo:</label>
+                        <!-- Editable time field for custom hour input as requested -->
+                        <input type="text" id="input-hora-sorteo" value="8:55 PM" placeholder="Ej. 8:55 PM" class="w-full p-2 border border-slate-300 rounded-xl bg-white text-xs sm:text-sm font-bold text-blue-600 shadow-sm focus:ring-2 focus:ring-blue-600 focus:outline-none text-center">
+                    </div>
+                </div>
 
-    <!-- MÓDULOS -->
-    <h2>📚 Contenido del curso</h2>
-    <div id="moduleGrid" class="grid"></div>
+                <!-- Tipo de Jugada -->
+                <div class="grid grid-cols-3 gap-1 bg-slate-200 p-1 rounded-xl text-center text-[11px] font-bold">
+                    <button onclick="setTipoJugada('Quiniela')" id="btn-quiniela" class="py-1.5 rounded-lg bg-white text-blue-700 shadow-sm transition">Quiniela</button>
+                    <button onclick="setTipoJugada('Pale')" id="btn-pale" class="py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Palé</button>
+                    <button onclick="setTipoJugada('Tripleta')" id="btn-tripleta" class="py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Tripleta</button>
+                </div>
 
-    <!-- CLASE -->
-    <section id="lessonSection" hidden>
-      <button onclick="closeLesson()">← Volver a los módulos</button>
-      <h2 id="lessonTitle"></h2>
-      <p id="lessonDescription"></p>
-      <div id="videoContainer"></div>
-      <p class="video-notice">▶ Reproduce tu clase aquí mismo en R7 ACADEMY.</p>
-      <button id="completeButton" class="complete-btn" onclick="completeModule()">✅ Marcar como completado</button>
-    </section>
-  </main>
+                <!-- Active Ticket Display Card -->
+                <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between flex-1 min-h-[110px]">
+                    <div>
+                        <div class="flex justify-between items-center text-xs text-slate-400 font-medium mb-1">
+                            <span id="label-modo">Número(s) y Monto</span>
+                            <span id="tipo-jugada-badge" class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold">Quiniela</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div id="numeros-ingresados" class="text-xl sm:text-2xl font-black text-slate-800 tracking-wider">
+                                <span class="text-slate-300 font-normal text-base">Ingrese número...</span>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-slate-400 uppercase">Monto</p>
+                                <p class="text-lg sm:text-xl font-extrabold text-blue-600" id="monto-display">RD$ 0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="instruccion-input" class="text-[11px] text-amber-600 font-semibold bg-amber-50 px-2 py-1 rounded mt-2">
+                        ⌨️ Escriba el número de 2 dígitos (ej. 23)
+                    </div>
+                </div>
+            </div>
 
-  <footer>
-    © 2026 R7 ACADEMY | Todos los derechos reservados
-  </footer>
-</div>
+            <!-- TAB 2: SORTEOS LISTA -->
+            <div id="content-sorteos" class="hidden flex flex-col h-full p-4 space-y-2">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Loterías y Horarios Oficiales</h3>
+                <div class="space-y-2 overflow-y-auto pr-1">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Quiniela Leidsa</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">8:55 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Lotería Nacional</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">8:55 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Gana Más</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">2:30 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Quiniela Real</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">12:55 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Quiniela Loteka Noche</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">7:55 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Quiniela Loteka Día</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">1:25 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">New York Tarde</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">2:25 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">New York Noche</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">10:20 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Florida Día</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">2:30 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Florida Noche</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">8:30 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">La Primera Día</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">11:55 AM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Primera Noche</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">6:55 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">La Suerte Día</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">12:25 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">La Suerte Tarde</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">5:55 PM</span></div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm"><span class="text-xs font-bold text-slate-700">Anguila 10:00 AM</span><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">10:00 AM</span></div>
+                </div>
+            </div>
 
-<script>
-const accounts = {
-  "2020": "2020", "2021": "2021", "2022": "2022", "2023": "2023", "2024": "2024",
-  "2025": "2025", "2026": "2026", "2027": "2027", "2028": "2028", "2029": "2029",
-  "2030": "2030", "2031": "2031", "2032": "2032", "2033": "2033", "2034": "2034",
-  "2035": "2035", "2036": "2036", "2037": "2037", "2038": "2038", "2039": "2039"
-};
+            <!-- TAB 3: TICKETS VENDIDOS -->
+            <div id="content-ventas" class="hidden flex flex-col h-full p-4 space-y-2">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tickets de Hoy</h3>
+                    <span id="total-ventas-dia" class="text-xs font-bold text-emerald-600">Total: RD$ 0</span>
+                </div>
+                <div id="lista-tickets" class="space-y-2 overflow-y-auto flex-1 pr-1">
+                    <div class="text-center text-slate-400 text-xs py-8">No hay tickets registrados aún hoy.</div>
+                </div>
+            </div>
 
-const modules = [
-  {
-    title: "Módulo 1: CREAR UN CANAL con IA",
-    description: "Bienvenido a R7 ACADEMY. Aprende a crear un canal y comenzar a producir contenido con IA.",
-    unlocked: true,
-    video: "https://www.youtube.com/watch?v=uBYsH5hzj1U"
-  },
-  {
-    title: "Módulo 2: CREAR EL PRIMER VIDEO",
-    description: "Aprende a crear guiones, narraciones e historias para tus videos.",
-    unlocked: false,
-    video: ""
-  },
-  {
-    title: "Módulo 3: EDITAR EL VIDEO Y CREAR UN SHORT EN 5 MINUTOS",
-    description: "Aprende a editar videos cortos utilizando inteligencia artificial.",
-    unlocked: false,
-    video: ""
-  },
-  {
-    title: "Módulo 4: FINAL",
-    description: "Aprende estrategias para publicar tus videos y monetizar tu contenido.",
-    unlocked: false,
-    video: ""
-  }
-];
+            <!-- TAB 4: GANANCIAS Y PÉRDIDAS (PyG) & VERIFICADOR DE GANADORES -->
+            <div id="content-ganancias" class="hidden flex flex-col h-full p-4 space-y-3 overflow-y-auto">
+                <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Resumen Financiero (PyG)</h3>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl">
+                        <p class="text-[10px] uppercase font-bold text-emerald-700">Ventas Brutas</p>
+                        <p id="pyg-ventas" class="text-base sm:text-lg font-black text-emerald-800 mt-1">RD$ 0</p>
+                        <p class="text-[9px] text-emerald-600 mt-0.5">Ingresos por boletos</p>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-200 p-3 rounded-2xl">
+                        <p class="text-[10px] uppercase font-bold text-rose-700">Premios Pagados</p>
+                        <p id="pyg-premios" class="text-base sm:text-lg font-black text-rose-800 mt-1">RD$ 0</p>
+                        <p class="text-[9px] text-rose-600 mt-0.5">Acertados por clientes</p>
+                    </div>
+                </div>
 
-let currentUser = null;
-let completed = [];
-let selectedModule = null;
+                <div class="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm space-y-2">
+                    <div class="flex justify-between text-xs font-semibold text-slate-600">
+                        <span>Comisión de Banca (15%):</span>
+                        <span id="pyg-comision" class="font-bold text-slate-800">RD$ 0</span>
+                    </div>
+                    <div class="flex justify-between text-xs font-semibold text-slate-600 border-t border-slate-100 pt-2">
+                        <span>Gastos Operativos:</span>
+                        <span class="font-bold text-slate-800">RD$ 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-black text-slate-900 border-t border-slate-200 pt-2">
+                        <span>GANANCIA NETA:</span>
+                        <span id="pyg-neta" class="text-emerald-600 text-base">RD$ 0</span>
+                    </div>
+                </div>
 
-function getYouTubeId(link) {
-  if (!link || typeof link !== "string") return null;
-  try {
-    const url = new URL(link.trim());
-    const hostname = url.hostname.toLowerCase();
-    let id = null;
+                <!-- Verificador de Ganadores por Sorteo -->
+                <div class="bg-blue-50 border border-blue-200 p-3.5 rounded-2xl space-y-3">
+                    <div>
+                        <p class="text-xs font-bold text-blue-900">🎯 Ingresar Resultados del Sorteo</p>
+                        <p class="text-[10px] text-blue-700">Ingrese los números ganadores para verificar tickets premiados</p>
+                    </div>
 
-    if (hostname.includes("youtube.com") || hostname.includes("youtube-nocookie.com")) {
-      if (url.pathname === "/watch") {
-        id = url.searchParams.get("v");
-      } else {
-        const parts = url.pathname.split("/");
-        if (["shorts", "embed", "live"].includes(parts[1])) {
-          id = parts[2];
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-blue-900 uppercase">Sorteo a Verificar:</label>
+                            <select id="sorteo-resultado" class="w-full p-2 border border-blue-300 rounded-xl bg-white text-xs font-semibold">
+                                <option value="Quiniela Leidsa">Quiniela Leidsa</option>
+                                <option value="Lotería Nacional">Lotería Nacional</option>
+                                <option value="Gana Más">Gana Más</option>
+                                <option value="Quiniela Real">Quiniela Real</option>
+                                <option value="Quiniela Loteka Noche">Quiniela Loteka Noche</option>
+                                <option value="Quiniela Loteka Día">Quiniela Loteka Día</option>
+                                <option value="New York Tarde">New York Tarde</option>
+                                <option value="New York Noche">New York Noche</option>
+                                <option value="Florida Día">Florida Día</option>
+                                <option value="Florida Noche">Florida Noche</option>
+                                <option value="La Primera Día">La Primera Día</option>
+                                <option value="Primera Noche">Primera Noche</option>
+                                <option value="La Suerte Día">La Suerte Día</option>
+                                <option value="La Suerte Tarde">La Suerte Tarde</option>
+                                <option value="Lotedom Día">Lotedom Día</option>
+                                <option value="Anguila 10:00 AM">Anguila 10:00 AM</option>
+                                <option value="New Jersey Día">New Jersey Día</option>
+                                <option value="Lotería Real Noche">Lotería Real Noche</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-900 uppercase">Hora del Sorteo:</label>
+                                <input type="text" id="res-hora" value="8:55 PM" class="w-full p-2 border border-blue-300 rounded-xl bg-white text-xs font-bold text-center text-blue-700">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-blue-900 uppercase">1er / 2do / 3er Premio:</label>
+                                <input type="text" id="res-numeros" placeholder="Ej. 23-45-12" class="w-full p-2 border border-blue-300 rounded-xl bg-white text-xs font-bold text-center text-slate-900">
+                            </div>
+                        </div>
+                        <button onclick="verificarGanadores()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow transition">Verificar Ganadores y Calcular Premios</button>
+                    </div>
+
+                    <!-- Lista de Ganadores Encontrados -->
+                    <div id="resultado-verificacion" class="space-y-2 pt-2 border-t border-blue-200">
+                        <p class="text-[11px] text-blue-800 text-center italic">No se han verificado sorteos todavía.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Teclado Numérico Táctil -->
+        <div id="teclado-container" class="bg-slate-100 p-3 border-t border-slate-200 shrink-0">
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="ingresarTecla('1')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">1</button>
+                <button onclick="ingresarTecla('2')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">2</button>
+                <button onclick="ingresarTecla('3')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">3</button>
+                <button onclick="ingresarTecla('4')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">4</button>
+                <button onclick="ingresarTecla('5')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">5</button>
+                <button onclick="ingresarTecla('6')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">6</button>
+                <button onclick="ingresarTecla('7')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">7</button>
+                <button onclick="ingresarTecla('8')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">8</button>
+                <button onclick="ingresarTecla('9')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">9</button>
+                <button onclick="borrarUltimo()" class="p-3 bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-95 transition rounded-xl text-sm font-black shadow-sm border border-rose-200 flex items-center justify-center">⌫</button>
+                <button onclick="ingresarTecla('0')" class="p-3 bg-white hover:bg-slate-50 active:scale-95 transition rounded-xl text-lg font-bold shadow-sm text-slate-700 border border-slate-200">0</button>
+                <button onclick="procesarAccion()" id="btn-accion" class="p-3 bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition rounded-xl text-xs font-black shadow-md flex items-center justify-center tracking-wider">ENTER</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Ticket Print Modal (Impresión de Ticket Térmico) -->
+    <div id="modal-ticket" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4 border border-slate-200 font-mono text-xs">
+            <div class="text-center space-y-1 border-b border-dashed border-slate-300 pb-3">
+                <h4 class="font-black text-sm tracking-widest text-slate-900">BANCA DOMINIO 5580</h4>
+                <p class="text-[10px] text-slate-500">RNC: 131-88492-1 • S.D.N.</p>
+                <p class="text-[10px] font-bold text-blue-600 mt-1" id="print-sorteo">Quiniela Leidsa</p>
+                <p class="text-[10px] text-slate-600">Sorteo Hora: <span id="print-hora-sorteo" class="font-bold">8:55 PM</span></p>
+            </div>
+            
+            <div class="space-y-1 py-1 border-b border-dashed border-slate-300">
+                <div class="flex justify-between text-[11px] font-bold text-slate-700">
+                    <span>TICKET ID:</span>
+                    <span id="print-id">TK-491823</span>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-600">
+                    <span>EMISIÓN:</span>
+                    <span id="print-fecha">26/10/2026 09:15 PM</span>
+                </div>
+            </div>
+
+            <div class="py-2 text-center">
+                <p class="text-[10px] uppercase text-slate-400 font-bold tracking-wider mb-1">Jugadas Registradas</p>
+                <div id="print-jugadas" class="text-base font-black text-slate-900 bg-slate-100 py-1.5 rounded">
+                    23 - 45
+                </div>
+                <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-200 font-bold">
+                    <span class="text-slate-600">TOTAL APUESTA:</span>
+                    <span class="text-sm text-emerald-600" id="print-monto">RD$ 100</span>
+                </div>
+            </div>
+
+            <div class="text-center text-[9px] text-slate-400 pt-1">
+                <p>Conserve su ticket. Pago sujeto a validación.</p>
+                <p class="font-bold text-slate-600 mt-0.5">¡Suerte en su jugada!</p>
+            </div>
+
+            <div class="flex space-x-2 pt-2">
+                <button onclick="cerrarModalPrint()" class="flex-1 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition">Cerrar</button>
+                <button onclick="simularImpresionReal()" class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition">🖨️ Imprimir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Application Logic -->
+    <script>
+        const horariosOficiales = {
+            "Quiniela Leidsa": "8:55 PM",
+            "Lotería Nacional": "8:55 PM",
+            "Gana Más": "2:30 PM",
+            "Quiniela Real": "12:55 PM",
+            "Quiniela Loteka Noche": "7:55 PM",
+            "Quiniela Loteka Día": "1:25 PM",
+            "New York Tarde": "2:25 PM",
+            "New York Noche": "10:20 PM",
+            "Florida Día": "2:30 PM",
+            "Florida Noche": "8:30 PM",
+            "La Primera Día": "11:55 AM",
+            "Primera Noche": "6:55 PM",
+            "La Suerte Día": "12:25 PM",
+            "La Suerte Tarde": "5:55 PM",
+            "Lotedom Día": "1:55 PM",
+            "Anguila 10:00 AM": "10:00 AM",
+            "New Jersey Día": "2:00 PM",
+            "Lotería Real Noche": "7:55 PM"
+        };
+
+        let modoInput = 'NUMERO'; 
+        let numeroActual = '';
+        let montoActual = '';
+        let tipoJugada = 'Quiniela';
+        let jugadaActual = { numerosStr: '', monto: 0 };
+        let listaTickets = [];
+        let totalPremiosPagados = 0;
+
+        window.onload = function() {
+            actualizarHoraPorDefecto();
+            actualizarPyG();
+        };
+
+        function actualizarHoraPorDefecto() {
+            const sorteoSeleccionado = document.getElementById('sorteo-select').value;
+            const inputHora = document.getElementById('input-hora-sorteo');
+            if (horariosOficiales[sorteoSeleccionado]) {
+                inputHora.value = horariosOficiales[sorteoSeleccionado];
+            }
         }
-      }
-    } else if (hostname.includes("youtu.be")) {
-      id = url.pathname.split("/")[1];
-    }
 
-    return (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) ? id : null;
-  } catch (e) {
-    return null;
-  }
-}
+        function mostrarMsgBox(titulo, texto, icono = "⚠️") {
+            document.getElementById('custom-msg-title').innerText = titulo;
+            document.getElementById('custom-msg-text').innerText = texto;
+            document.getElementById('custom-msg-icon').innerText = icono;
+            document.getElementById('custom-msg-box').classList.remove('hidden');
+        }
 
-document.getElementById("loginForm").addEventListener("submit", function(event) {
-  event.preventDefault();
-  const user = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value;
+        function cerrarMsgBox() {
+            document.getElementById('custom-msg-box').classList.add('hidden');
+        }
 
-  if (!accounts[user] || accounts[user] !== password) {
-    document.getElementById("loginError").textContent = "Usuario o contraseña incorrectos.";
-    return;
-  }
+        function switchTab(tab) {
+            ['jugada', 'sorteos', 'ventas', 'ganancias'].forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = "flex-1 py-2.5 text-center border-b-2 border-transparent hover:text-slate-900 transition";
+            });
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).className = "flex-1 py-2.5 text-center border-b-2 border-blue-600 text-blue-600 bg-white transition font-bold";
+            document.getElementById('teclado-container').style.display = (tab === 'jugada') ? 'block' : 'none';
+            if (tab === 'ganancias') actualizarPyG();
+        }
 
-  currentUser = user;
-  try {
-    const saved = JSON.parse(localStorage.getItem("r7_progress_" + user) || "[]");
-    completed = Array.isArray(saved) ? saved.filter(n => Number.isInteger(n)) : [];
-  } catch (e) {
-    completed = [];
-  }
+        function setTipoJugada(tipo) {
+            tipoJugada = tipo;
+            ['Quiniela', 'Pale', 'Tripleta'].forEach(t => {
+                const btn = document.getElementById(`btn-${t.toLowerCase()}`);
+                btn.className = (t === tipo) ? "py-1.5 rounded-lg bg-white text-blue-700 shadow-sm transition font-bold" : "py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition font-medium";
+            });
+            document.getElementById('tipo-jugada-badge').innerText = tipo;
+            reiniciarJugadaActual();
+        }
 
-  document.getElementById("loginError").textContent = "";
-  document.getElementById("loginScreen").hidden = true;
-  document.getElementById("studentPanel").hidden = false;
-  document.getElementById("welcome").textContent = "👤 Estudiante: " + user;
-  renderModules();
-  window.scrollTo(0, 0);
-});
+        function reiniciarJugadaActual() {
+            modoInput = 'NUMERO';
+            numeroActual = '';
+            montoActual = '';
+            jugadaActual = { numerosStr: '', monto: 0 };
+            actualizarUIJugada();
+        }
 
-function renderModules() {
-  const grid = document.getElementById("moduleGrid");
-  grid.replaceChildren();
+        function getMaxDigitos() {
+            if (tipoJugada === 'Quiniela') return 2;
+            if (tipoJugada === 'Pale') return 4;
+            if (tipoJugada === 'Tripleta') return 6;
+            return 2;
+        }
 
-  modules.forEach((module, index) => {
-    const card = document.createElement("article");
-    card.className = "card";
-    if (!module.unlocked) card.classList.add("locked");
+        function ingresarTecla(digito) {
+            if (modoInput === 'NUMERO') {
+                const max = getMaxDigitos();
+                if (numeroActual.length < max) numeroActual += digito;
+                actualizarUIJugada();
+            } else if (modoInput === 'MONTO') {
+                if (montoActual.length < 6) {
+                    montoActual += digito;
+                    jugadaActual.monto = parseInt(montoActual);
+                }
+                actualizarUIJugada();
+            }
+        }
 
-    const icon = document.createElement("div");
-    icon.className = "card-icon";
-    icon.textContent = module.unlocked ? "📗" : "🔒";
+        function borrarUltimo() {
+            if (modoInput === 'MONTO') {
+                if (montoActual.length > 0) {
+                    montoActual = montoActual.slice(0, -1);
+                    jugadaActual.monto = montoActual === '' ? 0 : parseInt(montoActual);
+                } else {
+                    modoInput = 'NUMERO';
+                }
+            } else {
+                if (numeroActual.length > 0) numeroActual = numeroActual.slice(0, -1);
+            }
+            actualizarUIJugada();
+        }
 
-    const title = document.createElement("h3");
-    title.textContent = module.title;
+        function actualizarUIJugada() {
+            const max = getMaxDigitos();
+            const divNumeros = document.getElementById('numeros-ingresados');
+            const instruccion = document.getElementById('instruccion-input');
+            const btnAccion = document.getElementById('btn-accion');
 
-    const description = document.createElement("p");
-    description.textContent = module.description;
+            if (modoInput === 'NUMERO') {
+                divNumeros.innerHTML = numeroActual === '' ? `<span class="text-slate-300 font-normal text-base">Ingrese ${max} dígitos...</span>` : formatearPares(numeroActual);
+                if (numeroActual.length === max) {
+                    instruccion.innerHTML = "⌨️ Pulse ENTER para ingresar el monto";
+                    instruccion.className = "text-[11px] text-emerald-600 font-semibold bg-emerald-50 px-2 py-1 rounded mt-2";
+                } else {
+                    instruccion.innerHTML = `⌨️ Faltan ${max - numeroActual.length} dígitos (${tipoJugada})`;
+                    instruccion.className = "text-[11px] text-amber-600 font-semibold bg-amber-50 px-2 py-1 rounded mt-2";
+                }
+                btnAccion.innerText = "SIGUIENTE";
+            } else {
+                divNumeros.innerHTML = `<span class="text-blue-600">${formatearPares(jugadaActual.numerosStr)}</span>`;
+                instruccion.innerHTML = "⌨️ Ingrese el monto y pulse ENTER para imprimir";
+                instruccion.className = "text-[11px] text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded mt-2";
+                btnAccion.innerText = "VENDER";
+            }
+            document.getElementById('monto-display').innerText = "RD$ " + (jugadaActual.monto ? jugadaActual.monto.toLocaleString() : '0');
+        }
 
-    const status = document.createElement("p");
-    status.className = "status";
+        function formatearPares(str) {
+            let res = [];
+            for (let i = 0; i < str.length; i += 2) res.push(str.substr(i, 2));
+            return res.join(' - ');
+        }
 
-    const button = document.createElement("button");
+        function procesarAccion() {
+            const max = getMaxDigitos();
+            if (modoInput === 'NUMERO') {
+                if (numeroActual.length < max) {
+                    mostrarMsgBox("Datos incompletos", `Debe completar los ${max} dígitos para la jugada de ${tipoJugada}.`);
+                    return;
+                }
+                jugadaActual.numerosStr = numeroActual;
+                modoInput = 'MONTO';
+                actualizarUIJugada();
+            } else {
+                if (!jugadaActual.monto || jugadaActual.monto <= 0) {
+                    mostrarMsgBox("Monto Inválido", "Ingrese un monto válido mayor a 0 para emitir el ticket.");
+                    return;
+                }
 
-    if (module.unlocked) {
-      status.classList.add("available");
-      status.textContent = completed.includes(index) ? "✅ Módulo completado" : "🟢 Disponible";
-      button.textContent = "▶ Entrar al módulo";
-      button.onclick = () => openModule(index);
-    } else {
-      status.classList.add("blocked");
-      status.textContent = "🔒 Módulo bloqueado";
-      button.textContent = "🔒 Próximamente";
-      button.disabled = true;
-    }
+                const selectSorteo = document.getElementById('sorteo-select').value;
+                const horaSorteoInput = document.getElementById('input-hora-sorteo').value || '8:55 PM';
 
-    card.append(icon, title, description, status, button);
-    grid.appendChild(card);
-  });
+                const nuevoTicket = {
+                    id: 'TK-' + Math.floor(100000 + Math.random() * 900000),
+                    sorteo: selectSorteo,
+                    horaSorteo: horaSorteoInput,
+                    tipo: tipoJugada,
+                    numeros: formatearPares(jugadaActual.numerosStr),
+                    rawNumeros: jugadaActual.numerosStr,
+                    monto: jugadaActual.monto,
+                    horaEmision: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
 
-  updateProgress();
-}
+                listaTickets.unshift(nuevoTicket);
+                actualizarListaTickets();
+                actualizarPyG();
+                mostrarModalTicket(nuevoTicket);
+                reiniciarJugadaActual();
+            }
+        }
 
-function openModule(index) {
-  const module = modules[index];
-  if (!module || !module.unlocked) return;
+        function mostrarModalTicket(t) {
+            document.getElementById('print-sorteo').innerText = t.sorteo;
+            document.getElementById('print-hora-sorteo').innerText = t.horaSorteo;
+            document.getElementById('print-id').innerText = t.id;
+            document.getElementById('print-fecha').innerText = t.horaEmision;
+            document.getElementById('print-jugadas').innerText = `${t.tipo.toUpperCase()}: ${t.numeros}`;
+            document.getElementById('print-monto').innerText = `RD$ ${t.monto.toLocaleString()}`;
+            document.getElementById('modal-ticket').classList.remove('hidden');
+        }
 
-  selectedModule = index;
-  document.getElementById("lessonSection").hidden = false;
-  document.getElementById("lessonTitle").textContent = module.title;
-  document.getElementById("lessonDescription").textContent = module.description;
+        function cerrarModalPrint() {
+            document.getElementById('modal-ticket').classList.add('hidden');
+        }
 
-  const area = document.getElementById("videoContainer");
-  area.replaceChildren();
+        function simularImpresionReal() {
+            mostrarMsgBox("Impresión Térmica", "🖨️ Conectando con impresora Bluetooth... ¡Ticket impreso y entregado con éxito!", "🖨️");
+            cerrarModalPrint();
+        }
 
-  const videoId = getYouTubeId(module.video);
+        function actualizarListaTickets() {
+            const container = document.getElementById('lista-tickets');
+            const totalVentasEl = document.getElementById('total-ventas-dia');
+            
+            if (listaTickets.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 text-xs py-8">No hay tickets registrados aún hoy.</div>`;
+                totalVentasEl.innerText = "Total: RD$ 0";
+                return;
+            }
 
-  if (videoId) {
-    const wrapper = document.createElement("div");
-    wrapper.className = "video-wrapper";
+            let sumaTotal = listaTickets.reduce((acc, t) => acc + t.monto, 0);
+            totalVentasEl.innerText = `Total: RD$ ${sumaTotal.toLocaleString()}`;
 
-    const iframe = document.createElement("iframe");
-    // Usamos youtube-nocookie y parámetros limpios para forzar la reproducción interna
-    iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&rel=0&modestbranding=1&playsinline=1`;
-    iframe.title = module.title;
-    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-    iframe.allowFullscreen = true;
-    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+            container.innerHTML = listaTickets.map(t => `
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold text-slate-800">${t.id}</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-1.5 py-0.5 rounded">${t.tipo}</span>
+                        </div>
+                        <p class="text-xs font-extrabold text-blue-600 mt-0.5">Nums: ${t.numeros}</p>
+                        <p class="text-[10px] text-slate-400">${t.sorteo} (${t.horaSorteo})</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black text-emerald-600">RD$ ${t.monto.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-    wrapper.appendChild(iframe);
-    area.appendChild(wrapper);
-  } else {
-    const message = document.createElement("p");
-    message.textContent = "📹 El video estará disponible próximamente.";
-    area.appendChild(message);
-  }
+        function actualizarPyG() {
+            let totalVentas = listaTickets.reduce((acc, t) => acc + t.monto, 0);
+            let comisionBanca = totalVentas * 0.15;
+            let gananciaNeta = totalVentas - totalPremiosPagados - comisionBanca;
 
-  const completeButton = document.getElementById("completeButton");
-  completeButton.disabled = completed.includes(index);
-  completeButton.textContent = completed.includes(index) ? "✅ Módulo completado" : "✅ Marcar como completado";
+            document.getElementById('pyg-ventas').innerText = `RD$ ${totalVentas.toLocaleString()}`;
+            document.getElementById('pyg-premios').innerText = `RD$ ${totalPremiosPagados.toLocaleString()}`;
+            document.getElementById('pyg-comision').innerText = `RD$ ${comisionBanca.toLocaleString()}`;
+            
+            const netaEl = document.getElementById('pyg-neta');
+            netaEl.innerText = `RD$ ${gananciaNeta.toLocaleString()}`;
+            netaEl.className = gananciaNeta >= 0 ? "text-emerald-600 text-base font-black" : "text-rose-600 text-base font-black";
+        }
 
-  document.getElementById("lessonSection").scrollIntoView({ behavior: "smooth" });
-}
+        function verificarGanadores() {
+            const sorteoRes = document.getElementById('sorteo-resultado').value;
+            const horaRes = document.getElementById('res-hora').value.trim();
+            const numerosInput = document.getElementById('res-numeros').value.trim();
+            const contenedorResultados = document.getElementById('resultado-verificacion');
 
-function completeModule() {
-  if (currentUser === null || selectedModule === null) return;
-  if (!modules[selectedModule]?.unlocked) return;
+            if (!numerosInput) {
+                mostrarMsgBox("Datos incompletos", "Por favor ingrese los números ganadores (ej. 23-45-12).");
+                return;
+            }
 
-  if (!completed.includes(selectedModule)) {
-    completed.push(selectedModule);
-    try {
-      localStorage.setItem("r7_progress_" + currentUser, JSON.stringify(completed));
-    } catch (e) {}
-  }
+            // Limpiar y separar números ganadores (permitiendo guiones o espacios)
+            const partes = numerosInput.replace(/[^0-9]/g, ' ').trim().split(/\s+/);
+            if (partes.length < 1 || partes[0].length !== 2) {
+                mostrarMsgBox("Formato inválido", "Ingrese formato correcto de 2 dígitos por premio (ej: 23 45 12).");
+                return;
+            }
 
-  renderModules();
-  document.getElementById("completeButton").disabled = true;
-  document.getElementById("completeButton").textContent = "✅ Módulo completado";
-  alert("¡Felicidades! Has completado este módulo.");
-}
+            const p1 = partes[0] || '';
+            const p2 = partes[1] || '';
+            const p3 = partes[2] || '';
 
-function updateProgress() {
-  const total = modules.length;
-  const done = modules.filter((m, i) => completed.includes(i)).length;
-  const percentage = total ? Math.round((done / total) * 100) : 0;
+            // Filtrar tickets que coincidan con la lotería y hora especificadas
+            const ticketsFiltrados = listaTickets.filter(t => 
+                t.sorteo.toLowerCase() === sorteoRes.toLowerCase() && 
+                t.horaSorteo.toLowerCase() === horaRes.toLowerCase()
+            );
 
-  document.getElementById("progressText").textContent = `${done} de ${total} módulos completados`;
-  document.getElementById("progressPercent").textContent = `${percentage}%`;
-  document.getElementById("progressBar").style.width = `${percentage}%`;
-}
+            if (ticketsFiltrados.length === 0) {
+                contenedorResultados.innerHTML = `<div class="bg-white p-2.5 rounded-xl border border-blue-100 text-[11px] text-slate-600 text-center font-medium">No hay tickets vendidos para <b>${sorteoRes} (${horaRes})</b>.</div>`;
+                return;
+            }
 
-function closeLesson() {
-  document.getElementById("lessonSection").hidden = true;
-  document.getElementById("videoContainer").replaceChildren();
-  selectedModule = null;
-  document.getElementById("moduleGrid").scrollIntoView({ behavior: "smooth" });
-}
+            let ganadoresEncontrados = [];
+            totalPremiosPagados = 0; // Reiniciar para recalcular
 
-function logout() {
-  currentUser = null;
-  completed = [];
-  selectedModule = null;
-  document.getElementById("studentPanel").hidden = true;
-  document.getElementById("loginScreen").hidden = false;
-  document.getElementById("password").value = "";
-  document.getElementById("lessonSection").hidden = true;
-  document.getElementById("videoContainer").replaceChildren();
-  window.scrollTo(0, 0);
-}
-</script>
+            ticketsFiltrados.forEach(t => {
+                let premioCalculado = 0;
+                let aciertoDesc = "";
 
+                if (t.tipo === 'Quiniela') {
+                    // t.rawNumeros tiene 2 dígitos ej "23"
+                    if (t.rawNumeros === p1) {
+                        premioCalculado = t.monto * 60; // 60x en primera
+                        aciertoDesc = "¡1er Premio (60x)!";
+                    } else if (t.rawNumeros === p2) {
+                        premioCalculado = t.monto * 8; // 8x en segunda
+                        aciertoDesc = "¡2do Premio (8x)!";
+                    } else if (t.rawNumeros === p3) {
+                        premioCalculado = t.monto * 4; // 4x en tercera
+                        aciertoDesc = "¡3er Premio (4x)!";
+                    }
+                } else if (t.tipo === 'Pale') {
+                    // t.rawNumeros tiene 4 dígitos ej "2345" (dos números de 2 dígitos)
+                    let nA = t.rawNumeros.substr(0, 2);
+                    let nB = t.rawNumeros.substr(2, 2);
+                    let aciertosCount = (nA === p1 || nA === p2 || nA === p3 ? 1 : 0) + (nB === p1 || nB === p2 || nB === p3 ? 1 : 0);
+                    
+                    if (aciertosCount === 2) {
+                        premioCalculado = t.monto * 1000; // Palé en cualquier orden de los 3
+                        aciertoDesc = "¡Palé Ganador (1,000x)!";
+                    }
+                } else if (t.tipo === 'Tripleta') {
+                    let nA = t.rawNumeros.substr(0, 2);
+                    let nB = t.rawNumeros.substr(2, 2);
+                    let nC = t.rawNumeros.substr(4, 2);
+                    let aciertosCount = (nA === p1 || nA === p2 || nA === p3 ? 1 : 0) + 
+                                       (nB === p1 || nB === p2 || nB === p3 ? 1 : 0) + 
+                                       (nC === p1 || nC === p2 || nC === p3 ? 1 : 0);
+                    if (aciertosCount === 3) {
+                        premioCalculado = t.monto * 20000;
+                        aciertoDesc = "¡Tripleta Ganadora (20,000x)!";
+                    }
+                }
+
+                if (premioCalculado > 0) {
+                    totalPremiosPagados += premioCalculado;
+                    ganadoresEncontrados.push({
+                        ticketId: t.id,
+                        numeros: t.numeros,
+                        tipo: t.tipo,
+                        montoPremio: premioCalculado,
+                        descripcion: aciertoDesc
+                    });
+                }
+            });
+
+            actualizarPyG();
+
+            if (ganadoresEncontrados.length === 0) {
+                contenedorResultados.innerHTML = `
+                    <div class="bg-white p-3 rounded-xl border border-blue-200 text-center space-y-1">
+                        <p class="text-xs font-bold text-slate-800">Sorteo Verificado (${sorteoRes} - ${horaRes})</p>
+                        <p class="text-[11px] text-slate-500">Ganadores: <b>[ ${p1} - ${p2} - ${p3} ]</b></p>
+                        <p class="text-[11px] text-amber-600 font-semibold mt-1">Ningún ticket resultó premiado en este sorteo.</p>
+                    </div>
+                `;
+            } else {
+                contenedorResultados.innerHTML = `
+                    <div class="bg-white p-3 rounded-xl border border-emerald-300 space-y-2">
+                        <div class="text-center border-b border-slate-100 pb-1">
+                            <p class="text-xs font-black text-emerald-700">🎉 ¡Se encontraron ganadores!</p>
+                            <p class="text-[10px] text-slate-500">${sorteoRes} (${horaRes}) • Prematros: [ ${p1} - ${p2} - ${p3} ]</p>
+                        </div>
+                        <div class="space-y-1.5 max-h-36 overflow-y-auto">
+                            ${ganadoresEncontrados.map(g => `
+                                <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100 flex justify-between items-center text-[11px]">
+                                    <div>
+                                        <span class="font-bold text-slate-800">${g.ticketId}</span> (${g.tipo}: <b>${g.numeros}</b>)
+                                        <p class="text-[10px] font-semibold text-emerald-700">${g.descripcion}</p>
+                                    </div>
+                                    <span class="font-black text-emerald-800 text-xs">+RD$ ${g.montoPremio.toLocaleString()}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
 </body>
 </html>
