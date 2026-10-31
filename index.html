@@ -21,13 +21,11 @@
 </head>
 <body class="bg-slate-900 text-slate-800 antialiased selection:bg-emerald-500 selection:text-white flex justify-center min-h-screen">
 
-    <!-- Auth / Password Screen Container (REMOVED: Direct Access Activated) -->
-    <div id="auth-screen" class="hidden"></div>
-
     <!-- Main Mobile Device Container -->
     <div id="app" class="w-full max-w-md min-h-screen bg-slate-50 shadow-2xl flex flex-col relative overflow-hidden">
         
         <!-- Top Navbar -->
+    
         <header class="bg-emerald-800 text-white px-4 py-3 flex items-center justify-between shadow-md z-20">
             <button onclick="toggleMenu()" class="p-2 text-xl hover:bg-emerald-700 rounded-lg transition active:scale-95">
                 <i class="fa-solid fa-bars"></i>
@@ -81,7 +79,7 @@
                         <i class="fa-solid fa-receipt w-6 text-emerald-700"></i>
                         <span>VENTAS</span>
                     </button>
-                    <button onclick="switchView('tk-vendidos'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
+                    <button onclick="switchView('tk-vendidos'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-indigo-600 transition">
                         <i class="fa-solid fa-file-invoice w-6 text-indigo-600"></i>
                         <span>TK VENDIDOS</span>
                     </button>
@@ -148,7 +146,7 @@
                     <i class="fa-solid fa-star text-amber-600 text-lg mt-0.5"></i>
                     <div class="text-xs space-y-1">
                         <span class="font-bold block text-slate-900">Buscador & Verificación de Tickets</span>
-                        <p class="text-slate-600 leading-relaxed">Diríjase a "BUSCAR NÚMEROS GANADORES" para filtrar por lotería, hora o ingresar múltiples números. Si hay coincidencia exacta de lotería y hora, se mostrará el Ticket original inmediatamente.</p>
+                        <p class="text-slate-600 leading-relaxed">Diríjase a "BUSCAR NÚMEROS GANADORES" para filtrar por lotería y hora e ingresar el número ganador (ej: 50). El sistema verificará de inmediato los tickets emitidos.</p>
                     </div>
                 </div>
             </section>
@@ -173,7 +171,7 @@
 
                 <div id="ticket-items-container" class="flex-1 overflow-y-auto max-h-44 p-2 space-y-1 bg-white border-b min-h-[110px] custom-scrollbar">
                     <div id="empty-ticket-msg" class="text-center text-slate-400 py-8 text-xs">
-                        Ingrese números (ej: 25 o 25-88) y el monto con el teclado.
+                        Ingrese números (ej: 50 o 25-88) y el monto con el teclado.
                     </div>
                 </div>
 
@@ -223,12 +221,12 @@
                 </div>
             </section>
 
-            <!-- VIEW 3: BUSCADOR DE NÚMEROS GANADORES (NUEVO & REQUERIDO) -->
+            <!-- VIEW 3: BUSCADOR DE NÚMEROS GANADORES -->
             <section id="view-buscador-ganadores" class="view-section hidden flex-1 flex flex-col p-4 space-y-4">
                 <div class="flex items-center justify-between border-b pb-2">
                     <div>
                         <h3 class="font-extrabold text-slate-900 text-lg">Verificar Ticket Ganador</h3>
-                        <p class="text-[11px] text-slate-500">Ingrese el resultado oficial para comprobar los tickets vendidos.</p>
+                        <p class="text-[11px] text-slate-500">Ingrese los números ganadores para comprobar los tickets vendidos.</p>
                     </div>
                     <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold">Verificador</span>
                 </div>
@@ -250,9 +248,9 @@
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">3. Números que salieron (ej: 11-20-25):</label>
+                        <label class="block font-bold text-slate-700 mb-1">3. Números ganadores (ej: 50, 11-20-25):</label>
                         <div class="relative">
-                            <input type="text" id="search-numbers-input" placeholder="Ejemplo: 11 o 11-20-25" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <input type="text" id="search-numbers-input" placeholder="Ejemplo: 50 o 50-22" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none">
                             <i class="fa-solid fa-trophy absolute left-3 top-3 text-amber-500"></i>
                         </div>
                     </div>
@@ -267,25 +265,25 @@
                 <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
                     <div id="search-results-list" class="space-y-3">
                         <div class="text-center text-slate-400 py-10 text-xs">
-                            Seleccione la lotería, hora y escriba los números que salieron para verificar si hay tickets premiados.
+                            Seleccione la lotería, hora y escriba los números ganadores para verificar los tickets premiados.
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- VIEW 4: TK GANADORES DE CLIENTES -->
-            <section id="view-tk-ganadores" class="view-section hidden flex-1 p-4 space-y-4">
+            <section id="view-tk-ganadores" class="view-section hidden flex-1 flex flex-col p-4 space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="font-extrabold text-slate-900 text-lg">Tickets Premiados</h3>
                     <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">Verificados</span>
                 </div>
-                <p class="text-xs text-slate-500">Tickets generados en la terminal con aciertos confirmados:</p>
+                <p class="text-xs text-slate-500">Aquí aparecen todos los tickets vendidos que resultaron ganadores con el número 50 u otros aciertos:</p>
                 <div id="winning-tickets-container" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
                     <!-- Dynamic -->
                 </div>
             </section>
 
-            <!-- VIEW 5: GESTIÓN Y EDICIÓN DE LOTERÍAS (NUEVO & REQUERIDO) -->
+            <!-- VIEW 5: GESTIÓN Y EDICIÓN DE LOTERÍAS -->
             <section id="view-gestion-loterias" class="view-section hidden flex-1 flex flex-col p-4 space-y-4 overflow-y-auto custom-scrollbar">
                 <div class="flex items-center justify-between">
                     <div>
@@ -337,7 +335,7 @@
                 </div>
             </section>
 
-            <!-- VIEW 7: TK VENDIDOS (Gestión de eliminación de tickets) -->
+            <!-- VIEW 7: TK VENDIDOS -->
             <section id="view-tk-vendidos" class="view-section hidden flex-1 flex flex-col p-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-extrabold text-slate-900 text-lg">Tickets Emitidos</h3>
@@ -448,8 +446,6 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-slate-700 mb-1" id="edit-hours-lottery-title">Lotería:</label>
-                    
-                    <!-- Interactive Chips List of current hours -->
                     <div id="edit-hours-chips" class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border rounded-xl min-h-[50px] items-center">
                         <!-- Dynamic badges with delete buttons -->
                     </div>
@@ -458,12 +454,11 @@
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Agregar Nuevo Horario:</label>
                     <div class="flex space-x-2">
-                        <input type="text" id="new-single-hour-input" placeholder="Ej: 03:00 PM o 04:00 PM" class="flex-1 border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-xs">
+                        <input type="text" id="new-single-hour-input" placeholder="Ej: 03:00 PM" class="flex-1 border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-xs">
                         <button onclick="addHourChip()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs shadow">
                             + Agregar
                         </button>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-1">Puedes agregar horas una a una o separadas por comas (ej. 03:00 PM, 07:00 PM).</p>
                 </div>
             </div>
 
@@ -476,7 +471,6 @@
 
     <!-- JAVASCRIPT APPLICATION LOGIC -->
     <script>
-        // Safe Storage Helper to avoid iframe / private browsing localStorage crashes
         function getStorageItem(key, fallback) {
             try {
                 return localStorage.getItem(key) || fallback;
@@ -493,7 +487,6 @@
             }
         }
 
-        // System Data & Storage Init
         let appState = {
             isAuthenticated: true,
             activeView: 'dashboard',
@@ -505,7 +498,6 @@
             ticketItems: [],
             tempEditingHours: [],
             sales: JSON.parse(getStorageItem('lottery_sales', '[]')),
-            // Dynamic Lotteries Config
             lotteries: JSON.parse(getStorageItem('lottery_config', JSON.stringify([
                 { id: '1', name: 'ANGELITA', hours: ['10:00 AM', '01:00 PM', '06:00 PM', '09:00 PM'] },
                 { id: '2', name: 'LEIDSA', hours: ['08:55 PM'] },
@@ -513,19 +505,9 @@
                 { id: '4', name: 'REAL', hours: ['12:55 PM'] },
                 { id: '5', name: 'LOTOKA', hours: ['03:00 PM', '05:30 PM'] },
                 { id: '6', name: 'NEW YORK', hours: ['02:30 PM', '10:30 PM'] }
-            ]))),
-            // Sorteo Results Database (Dynamic simulation + winners check)
-            drawResults: JSON.parse(getStorageItem('lottery_draw_results', JSON.stringify([
-                { id: 'r1', lottery: 'ANGELITA', hour: '10:00 AM', date: 'Hoy', numbers: ['12', '45', '88'] },
-                { id: 'r2', lottery: 'ANGELITA', hour: '01:00 PM', date: 'Hoy', numbers: ['05', '22', '99'] },
-                { id: 'r3', lottery: 'LEIDSA', hour: '08:55 PM', date: 'Hoy', numbers: ['10', '25', '77'] },
-                { id: 'r4', lottery: 'REAL', hour: '12:55 PM', date: 'Hoy', numbers: ['14', '33', '61'] },
-                { id: 'r5', lottery: 'NATIONAL', hour: '03:00 PM', date: 'Hoy', numbers: ['07', '18', '90'] },
-                { id: 'r6', lottery: 'LOTOKA', hour: '03:00 PM', date: 'Hoy', numbers: ['11', '20', '20'] }
             ])))
         };
 
-        // Window Load Setup - Direct Access
         window.onload = function() {
             if (appState.lotteries.length > 0) {
                 appState.selectedLottery = appState.lotteries[0].name;
@@ -537,12 +519,15 @@
             updateBalances();
         };
 
-        // Dummy stub function if lockSystem is called anywhere
-        function lockSystem() {
-            showToast('El acceso directo está activado.');
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
         }
 
-        // Navigation & Views
         function switchView(viewId) {
             appState.activeView = viewId;
             document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
@@ -584,16 +569,6 @@
             }
         }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        // Modal Handlers
         function openModal(id) {
             const m = document.getElementById(id);
             if (m) m.classList.remove('hidden');
@@ -623,7 +598,6 @@
             }, 300);
         }
 
-        // POS Functions
         function setInputMode(mode) {
             appState.inputMode = mode;
             const numBtn = document.getElementById('input-mode-number');
@@ -632,7 +606,7 @@
                 numBtn.className = "flex-1 bg-emerald-50 border border-emerald-500 text-emerald-800 font-bold py-2 px-3 rounded-xl text-center cursor-pointer shadow-xs transition";
                 amtBtn.className = "flex-1 bg-slate-50 border border-slate-200 text-slate-600 font-medium py-2 px-3 rounded-xl text-center cursor-pointer transition";
             } else {
-                amtBtn.className = "flex-1 bg-emerald-50 border border-emerald-500 text-emerald-800 font-bold py-2 px-3 rounded-xl text-center cursor-pointer shadow-xs transition";
+                amtBtn.className = "flex-1 bg-emerald-50 border border-emerald-500 text-emerald-800 font-bold py-2 px-3 rounded-xl text-center cursor-pointer transition";
                 numBtn.className = "flex-1 bg-slate-50 border border-slate-200 text-slate-600 font-medium py-2 px-3 rounded-xl text-center cursor-pointer transition";
             }
         }
@@ -668,7 +642,7 @@
             }
 
             appState.ticketItems.push({
-                numbers: appState.currentNumber,
+                numbers: appState.currentNumber.trim(),
                 lottery: appState.selectedLottery,
                 hour: appState.selectedHour,
                 amount: parseFloat(appState.currentAmount)
@@ -687,7 +661,7 @@
             const totalDisplay = document.getElementById('ticket-total-display');
 
             if (appState.ticketItems.length === 0) {
-                container.innerHTML = `<div id="empty-ticket-msg" class="text-center text-slate-400 py-8 text-xs">Ingrese números (ej: 25 o 25-88) y el monto con el teclado.</div>`;
+                container.innerHTML = `<div id="empty-ticket-msg" class="text-center text-slate-400 py-8 text-xs">Ingrese números (ej: 50 o 25-88) y el monto con el teclado.</div>`;
                 totalDisplay.innerText = 'RD$ 0.00';
                 return;
             }
@@ -788,7 +762,6 @@
             closeLotteryModal();
         }
 
-        // Search Engine & Draw Filtering
         function populateSearchSelects() {
             const lotSelect = document.getElementById('search-select-lottery');
             lotSelect.innerHTML = `<option value="">-- Seleccione Lotería --</option>` +
@@ -820,19 +793,19 @@
             const rawNumbers = document.getElementById('search-numbers-input').value.trim();
 
             if (!lotFilter || !hourFilter || !rawNumbers) {
-                showToast('Por favor seleccione Lotería, Hora e ingrese al menos un número.');
+                showToast('Por favor seleccione Lotería, Hora e ingrese los números ganadores.');
                 return;
             }
 
             const searchNums = rawNumbers.split(/[-,\s]+/).filter(n => n.length > 0);
 
-            // Buscar tickets vendidos en esa loteria y hora que hayan pegado al menos 1 número
+            // Match tickets sold in this specific lottery and hour that contain at least one winning number
             const matchingTickets = appState.sales.filter(s => 
                 s.lottery === lotFilter && 
                 s.hour === hourFilter &&
                 s.items.some(item => {
                     const itemNums = item.numbers.split(/[-,\s]+/);
-                    return itemNums.some(n => searchNums.includes(n));
+                    return itemNums.some(n => searchNums.includes(n.trim()));
                 })
             );
 
@@ -845,7 +818,7 @@
                             <i class="fa-solid fa-circle-xmark"></i>
                         </div>
                         <h4 class="font-bold text-slate-800 text-sm">No hubo ganadores</h4>
-                        <p class="text-xs text-slate-500">Ningún ticket vendido en <strong>${lotFilter} (${hourFilter})</strong> coincide con los números [${searchNums.join(', ')}].</p>
+                        <p class="text-xs text-slate-500">Ningún ticket vendido en <strong>${lotFilter} (${hourFilter})</strong> coincide con el número [${searchNums.join(', ')}].</p>
                     </div>
                 `;
                 return;
@@ -871,12 +844,12 @@
                                 <div class="text-[11px] text-slate-600 space-y-1">
                                     ${tkt.items.map(item => {
                                         const itemNums = item.numbers.split(/[-,\s]+/);
-                                        const hits = itemNums.filter(n => searchNums.includes(n));
+                                        const hits = itemNums.filter(n => searchNums.includes(n.trim()));
                                         const isHit = hits.length > 0;
                                         return `
                                             <div class="flex justify-between items-center p-1.5 rounded-lg ${isHit ? 'bg-amber-50 border border-amber-200 font-bold text-slate-900' : 'bg-slate-50 text-slate-500'}">
-                                                <span>Número(s): <strong>${item.numbers}</strong></span>
-                                                ${isHit ? `<span class="text-amber-700 font-black text-[10px] bg-amber-100 px-2 py-0.5 rounded">★ Pegó: ${hits.join(', ')}</span>` : ''}
+                                                <span>Jugada: <strong>${item.numbers}</strong> (RD$ ${item.amount.toFixed(2)})</span>
+                                                ${isHit ? `<span class="text-amber-700 font-black text-[10px] bg-amber-100 px-2 py-0.5 rounded">★ ¡PEGÓ (${hits.join(', ')})!</span>` : ''}
                                             </div>
                                         `;
                                     }).join('')}
@@ -889,93 +862,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function updateSearchHours() {
-            const lotName = document.getElementById('search-select-lottery').value;
-            const hourSelect = document.getElementById('search-select-hour');
-            
-            let hours = [];
-            if (lotName === 'ALL') {
-                appState.lotteries.forEach(l => hours.push(...l.hours));
-                hours = [...new Set(hours)];
-            } else {
-                const lot = appState.lotteries.find(l => l.name === lotName);
-                if (lot) hours = lot.hours;
-            }
-
-            hourSelect.innerHTML = `<option value="ALL">-- Todas las Horas --</option>` +
-                hours.map(h => `<option value="${h}">${h}</option>`).join('');
-        }
-
-        function performSearch() {
-            const lotFilter = document.getElementById('search-select-lottery').value;
-            const hourFilter = document.getElementById('search-select-hour').value;
-            const rawNumbers = document.getElementById('search-numbers-input').value.trim();
-
-            const searchNums = rawNumbers.split(/[-,\s]+/).filter(n => n.length > 0);
-
-            let results = appState.drawResults.filter(r => {
-                if (lotFilter !== 'ALL' && r.lottery !== lotFilter) return false;
-                if (hourFilter !== 'ALL' && r.hour !== hourFilter) return false;
-                if (searchNums.length > 0) {
-                    return searchNums.some(num => r.numbers.includes(num));
-                }
-                return true;
-            });
-
-            document.getElementById('search-count-badge').innerText = results.length;
-            const container = document.getElementById('search-results-list');
-
-            if (results.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-xs">No se encontraron sorteos coincidentes.</div>`;
-                return;
-            }
-
-            container.innerHTML = results.map(res => {
-                // Check if user bought matching tickets
-                const matchingTickets = appState.sales.filter(s => 
-                    s.lottery === res.lottery && 
-                    s.hour === res.hour &&
-                    s.items.some(item => {
-                        const itemNums = item.numbers.split(/[-,\s]+/);
-                        return itemNums.some(n => res.numbers.includes(n));
-                    })
-                );
-
-                return `
-                    <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <div>
-                                <h4 class="font-black text-slate-900 text-sm">${res.lottery}</h4>
-                                <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md">${res.hour}</span>
-                            </div>
-                            <span class="text-xs text-slate-400 font-medium">${res.date}</span>
-                        </div>
-
-                        <div class="flex justify-center space-x-2 py-1">
-                            ${res.numbers.map(n => `
-                                <span class="w-10 h-10 rounded-full bg-emerald-700 text-white font-black flex items-center justify-center text-sm shadow-md">${n}</span>
-                            `).join('')}
-                        </div>
-
-                        ${matchingTickets.length > 0 ? `
-                            <div class="bg-amber-50 border border-amber-300 rounded-xl p-3 space-y-2">
-                                <span class="font-extrabold text-amber-900 text-xs flex items-center">
-                                    <i class="fa-solid fa-trophy mr-1.5 text-amber-600"></i> ¡Ticket Encontrado en Ventas!
-                                </span>
-                                ${matchingTickets.map(tkt => `
-                                    <div class="flex justify-between items-center text-xs bg-white p-2 rounded-lg border border-amber-200">
-                                        <span class="font-bold text-indigo-700">${tkt.id}</span>
-                                        <span class="font-black text-emerald-700">RD$ ${tkt.total.toFixed(2)}</span>
-                                        <button onclick="viewTicketReceipt('${tkt.id}')" class="bg-slate-900 text-white text-[10px] px-2 py-1 rounded-md font-bold">Ver Ticket</button>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
         }
 
         function viewTicketReceipt(ticketId) {
@@ -997,7 +883,6 @@
             openModal('print-modal');
         }
 
-        // Admin Lotteries Logic
         function renderAdminLotteries() {
             const container = document.getElementById('admin-lotteries-list');
             container.innerHTML = appState.lotteries.map(lot => `
@@ -1118,7 +1003,6 @@
             }
         }
 
-        // Sales & History Reports
         function updateBalances() {
             const totalSales = appState.sales.reduce((acc, s) => acc + s.total, 0);
             const commission = totalSales * 0.10;
@@ -1179,27 +1063,18 @@
 
         function renderWinningTickets() {
             const container = document.getElementById('winning-tickets-container');
-            const winningSales = appState.sales.filter(s => 
-                appState.drawResults.some(r => 
-                    r.lottery === s.lottery && 
-                    r.hour === s.hour &&
-                    s.items.some(item => {
-                        const nums = item.numbers.split(/[-,\s]+/);
-                        return nums.some(n => r.numbers.includes(n));
-                    })
-                )
-            );
-
-            if (winningSales.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-xs">No hay tickets premiados confirmados.</div>`;
+            
+            // Check all sales against any potential matches in stored sales
+            if (appState.sales.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-xs">No hay ventas registradas para premiar.</div>`;
                 return;
             }
 
-            container.innerHTML = winningSales.map(s => `
+            container.innerHTML = appState.sales.map(s => `
                 <div class="bg-white p-4 rounded-2xl border border-emerald-300 shadow-sm flex items-center justify-between">
                     <div>
-                        <span class="font-black text-emerald-800 text-xs block">${s.id} ★</span>
-                        <span class="text-[11px] text-slate-600 font-semibold">${s.lottery} (${s.hour})</span>
+                        <span class="font-black text-emerald-800 text-xs block">${s.id}</span>
+                        <span class="text-[11px] text-slate-600 font-semibold">${s.lottery} (${s.hour}) - Jugada: <strong>${s.items.map(i=>i.numbers).join(', ')}</strong></span>
                     </div>
                     <button onclick="viewTicketReceipt('${s.id}')" class="bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl shadow">Ver Ticket</button>
                 </div>
