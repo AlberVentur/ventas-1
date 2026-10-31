@@ -227,46 +227,48 @@
             <section id="view-buscador-ganadores" class="view-section hidden flex-1 flex flex-col p-4 space-y-4">
                 <div class="flex items-center justify-between border-b pb-2">
                     <div>
-                        <h3 class="font-extrabold text-slate-900 text-lg">Buscador de Sorteos</h3>
-                        <p class="text-[11px] text-slate-500">Filtre por lotería, hora e ingrese números jugados.</p>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Verificar Ticket Ganador</h3>
+                        <p class="text-[11px] text-slate-500">Ingrese el resultado oficial para comprobar los tickets vendidos.</p>
                     </div>
-                    <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold">Filtro Vivo</span>
+                    <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold">Verificador</span>
                 </div>
 
-                <!-- Form Controls for Filtering -->
-                <div class="bg-white p-3.5 rounded-2xl border shadow-sm space-y-3 text-xs">
+                <!-- Form Controls for Checking Numbers -->
+                <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3.5 text-xs">
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">1. Seleccionar Lotería:</label>
-                        <select id="search-select-lottery" onchange="updateSearchHours(); performSearch();" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
-                            <option value="ALL">-- Todas las Loterías --</option>
+                        <select id="search-select-lottery" onchange="updateSearchHours()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">-- Seleccione Lotería --</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">2. Seleccionar Hora de Sorteo:</label>
-                        <select id="search-select-hour" onchange="performSearch()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
-                            <option value="ALL">-- Todas las Horas --</option>
+                        <label class="block font-bold text-slate-700 mb-1">2. Seleccionar Hora:</label>
+                        <select id="search-select-hour" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">-- Seleccione Hora --</option>
                         </select>
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">3. Números a buscar (Permite varios: ej: 12-45-88):</label>
+                        <label class="block font-bold text-slate-700 mb-1">3. Números que salieron (ej: 11-20-25):</label>
                         <div class="relative">
-                            <input type="text" id="search-numbers-input" oninput="performSearch()" placeholder="Ingrese uno o varios números..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none">
-                            <i class="fa-solid fa-hashtag absolute left-3 top-3 text-slate-400"></i>
+                            <input type="text" id="search-numbers-input" placeholder="Ejemplo: 11 o 11-20-25" class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <i class="fa-solid fa-trophy absolute left-3 top-3 text-amber-500"></i>
                         </div>
                     </div>
+
+                    <button onclick="performSearch()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3 rounded-xl shadow transition text-xs flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Verificar Si Hay Ticket Ganador</span>
+                    </button>
                 </div>
 
                 <!-- Search Results Area -->
                 <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                    <h4 class="font-extrabold text-xs text-slate-500 uppercase tracking-wider flex justify-between items-center">
-                        <span>Resultados Encontrados</span>
-                        <span id="search-count-badge" class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-[10px]">0</span>
-                    </h4>
-
                     <div id="search-results-list" class="space-y-3">
-                        <!-- Dynamic Results -->
+                        <div class="text-center text-slate-400 py-10 text-xs">
+                            Seleccione la lotería, hora y escriba los números que salieron para verificar si hay tickets premiados.
+                        </div>
                     </div>
                 </div>
             </section>
@@ -539,4 +541,670 @@
         function lockSystem() {
             showToast('El acceso directo está activado.');
         }
-<!-- ... existing code -->
+
+        // Navigation & Views
+        function switchView(viewId) {
+            appState.activeView = viewId;
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+            
+            const target = document.getElementById('view-' + viewId);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+
+            if (viewId === 'buscador-ganadores') {
+                populateSearchSelects();
+                performSearch();
+            } else if (viewId === 'tk-ganadores') {
+                renderWinningTickets();
+            } else if (viewId === 'ventas') {
+                renderSalesHistory();
+            } else if (viewId === 'tk-vendidos') {
+                renderSoldTickets();
+            } else if (viewId === 'gestion-loterias') {
+                renderAdminLotteries();
+            }
+        }
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('sidebar-content');
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                setTimeout(() => {
+                    sidebar.classList.remove('opacity-0');
+                    content.classList.remove('-translate-x-full');
+                }, 10);
+            } else {
+                sidebar.classList.add('opacity-0');
+                content.classList.add('-translate-x-full');
+                setTimeout(() => {
+                    sidebar.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Modal Handlers
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (m) m.classList.add('hidden');
+        }
+
+        function openLotteryModal() {
+            renderLotteryModalList();
+            const modal = document.getElementById('lottery-modal');
+            const content = document.getElementById('lottery-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('translate-y-full');
+            }, 10);
+        }
+
+        function closeLotteryModal() {
+            const modal = document.getElementById('lottery-modal');
+            const content = document.getElementById('lottery-modal-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // POS Functions
+        function setInputMode(mode) {
+            appState.inputMode = mode;
+            const numBtn = document.getElementById('input-mode-number');
+            const amtBtn = document.getElementById('input-mode-amount');
+            if (mode === 'number') {
+                numBtn.className = "flex-1 bg-emerald-50 border border-emerald-500 text-emerald-800 font-bold py-2 px-3 rounded-xl text-center cursor-pointer shadow-xs transition";
+                amtBtn.className = "flex-1 bg-slate-50 border border-slate-200 text-slate-600 font-medium py-2 px-3 rounded-xl text-center cursor-pointer transition";
+            } else {
+                amtBtn.className = "flex-1 bg-emerald-50 border border-emerald-500 text-emerald-800 font-bold py-2 px-3 rounded-xl text-center cursor-pointer shadow-xs transition";
+                numBtn.className = "flex-1 bg-slate-50 border border-slate-200 text-slate-600 font-medium py-2 px-3 rounded-xl text-center cursor-pointer transition";
+            }
+        }
+
+        function pressKey(key) {
+            if (appState.inputMode === 'number') {
+                if (key === 'backspace') {
+                    appState.currentNumber = appState.currentNumber.slice(0, -1);
+                } else if (key === 'enter') {
+                    setInputMode('amount');
+                    return;
+                } else {
+                    if (appState.currentNumber.length < 10) appState.currentNumber += key;
+                }
+                document.getElementById('input-val-number').innerText = appState.currentNumber || '_';
+            } else {
+                if (key === 'backspace') {
+                    appState.currentAmount = appState.currentAmount.slice(0, -1);
+                } else if (key === 'enter') {
+                    addTicketItem();
+                    return;
+                } else if (key !== '-') {
+                    if (appState.currentAmount.length < 6) appState.currentAmount += key;
+                }
+                document.getElementById('input-val-amount').innerText = appState.currentAmount || '0';
+            }
+        }
+
+        function addTicketItem() {
+            if (!appState.currentNumber || !appState.currentAmount || parseFloat(appState.currentAmount) <= 0) {
+                showToast('Ingrese números y un monto válido');
+                return;
+            }
+
+            appState.ticketItems.push({
+                numbers: appState.currentNumber,
+                lottery: appState.selectedLottery,
+                hour: appState.selectedHour,
+                amount: parseFloat(appState.currentAmount)
+            });
+
+            appState.currentNumber = '';
+            appState.currentAmount = '';
+            document.getElementById('input-val-number').innerText = '_';
+            document.getElementById('input-val-amount').innerText = '0';
+            setInputMode('number');
+            renderTicketItems();
+        }
+
+        function renderTicketItems() {
+            const container = document.getElementById('ticket-items-container');
+            const totalDisplay = document.getElementById('ticket-total-display');
+
+            if (appState.ticketItems.length === 0) {
+                container.innerHTML = `<div id="empty-ticket-msg" class="text-center text-slate-400 py-8 text-xs">Ingrese números (ej: 25 o 25-88) y el monto con el teclado.</div>`;
+                totalDisplay.innerText = 'RD$ 0.00';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = appState.ticketItems.map((item, index) => {
+                total += item.amount;
+                return `
+                    <div class="grid grid-cols-4 text-xs font-semibold py-1.5 px-2 bg-slate-50 border rounded-xl items-center text-center">
+                        <span class="font-extrabold text-emerald-800">${item.numbers}</span>
+                        <span class="text-slate-700 text-[11px]">${item.lottery}</span>
+                        <span class="text-slate-500 text-[10px]">${item.hour}</span>
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">RD$ ${item.amount.toFixed(2)}</span>
+                            <button onclick="removeTicketItem(${index})" class="text-red-500 hover:text-red-700 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalDisplay.innerText = `RD$ ${total.toFixed(2)}`;
+        }
+
+        function removeTicketItem(index) {
+            appState.ticketItems.splice(index, 1);
+            renderTicketItems();
+        }
+
+        function clearCurrentTicket() {
+            appState.ticketItems = [];
+            renderTicketItems();
+        }
+
+        function confirmAndPrintTicket() {
+            if (appState.ticketItems.length === 0) {
+                showToast('El ticket está vacío');
+                return;
+            }
+
+            const total = appState.ticketItems.reduce((acc, item) => acc + item.amount, 0);
+            const newTicket = {
+                id: 'TKT-' + Math.floor(1000 + Math.random() * 9000),
+                date: new Date().toLocaleString(),
+                lottery: appState.selectedLottery,
+                hour: appState.selectedHour,
+                items: [...appState.ticketItems],
+                total: total
+            };
+
+            appState.sales.unshift(newTicket);
+            setStorageItem('lottery_sales', JSON.stringify(appState.sales));
+
+            document.getElementById('receipt-id').innerText = newTicket.id;
+            document.getElementById('receipt-date').innerText = newTicket.date;
+            document.getElementById('receipt-lottery').innerText = `${newTicket.lottery} (${newTicket.hour})`;
+            document.getElementById('receipt-total').innerText = `RD$ ${total.toFixed(2)}`;
+
+            document.getElementById('receipt-items-list').innerHTML = newTicket.items.map(i => `
+                <div class="flex justify-between">
+                    <span>${i.numbers} (${i.lottery})</span>
+                    <span class="font-bold">RD$ ${i.amount.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            clearCurrentTicket();
+            updateBalances();
+            openModal('print-modal');
+        }
+
+        function triggerThermalPrint() {
+            window.print();
+        }
+
+        function updatePOSHeader() {
+            document.getElementById('current-lottery-name').innerText = `${appState.selectedLottery} (${appState.selectedHour})`;
+        }
+
+        function renderLotteryModalList() {
+            const container = document.getElementById('lottery-list-container');
+            container.innerHTML = appState.lotteries.map(lot => `
+                <div class="bg-white p-3 rounded-2xl border space-y-2">
+                    <h4 class="font-extrabold text-sm text-slate-800">${lot.name}</h4>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${lot.hours.map(h => `
+                            <button onclick="selectLotteryAndHour('${lot.name}', '${h}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-800 text-xs font-bold rounded-xl transition border border-emerald-200">
+                                ${h}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectLotteryAndHour(lottery, hour) {
+            appState.selectedLottery = lottery;
+            appState.selectedHour = hour;
+            updatePOSHeader();
+            closeLotteryModal();
+        }
+
+        // Search Engine & Draw Filtering
+        function populateSearchSelects() {
+            const lotSelect = document.getElementById('search-select-lottery');
+            lotSelect.innerHTML = `<option value="">-- Seleccione Lotería --</option>` +
+                appState.lotteries.map(l => `<option value="${l.name}">${l.name}</option>`).join('');
+            
+            updateSearchHours();
+        }
+
+        function updateSearchHours() {
+            const lotName = document.getElementById('search-select-lottery').value;
+            const hourSelect = document.getElementById('search-select-hour');
+            
+            let hours = [];
+            if (!lotName) {
+                appState.lotteries.forEach(l => hours.push(...l.hours));
+                hours = [...new Set(hours)];
+            } else {
+                const lot = appState.lotteries.find(l => l.name === lotName);
+                if (lot) hours = lot.hours;
+            }
+
+            hourSelect.innerHTML = `<option value="">-- Seleccione Hora --</option>` +
+                hours.map(h => `<option value="${h}">${h}</option>`).join('');
+        }
+
+        function performSearch() {
+            const lotFilter = document.getElementById('search-select-lottery').value;
+            const hourFilter = document.getElementById('search-select-hour').value;
+            const rawNumbers = document.getElementById('search-numbers-input').value.trim();
+
+            if (!lotFilter || !hourFilter || !rawNumbers) {
+                showToast('Por favor seleccione Lotería, Hora e ingrese al menos un número.');
+                return;
+            }
+
+            const searchNums = rawNumbers.split(/[-,\s]+/).filter(n => n.length > 0);
+
+            // Buscar tickets vendidos en esa loteria y hora que hayan pegado al menos 1 número
+            const matchingTickets = appState.sales.filter(s => 
+                s.lottery === lotFilter && 
+                s.hour === hourFilter &&
+                s.items.some(item => {
+                    const itemNums = item.numbers.split(/[-,\s]+/);
+                    return itemNums.some(n => searchNums.includes(n));
+                })
+            );
+
+            const container = document.getElementById('search-results-list');
+
+            if (matchingTickets.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-6 rounded-2xl border text-center space-y-2">
+                        <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto text-xl">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-sm">No hubo ganadores</h4>
+                        <p class="text-xs text-slate-500">Ningún ticket vendido en <strong>${lotFilter} (${hourFilter})</strong> coincide con los números [${searchNums.join(', ')}].</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center justify-between border-b border-emerald-200 pb-2">
+                        <span class="font-extrabold text-emerald-900 text-xs flex items-center">
+                            <i class="fa-solid fa-trophy text-amber-500 text-base mr-2"></i> 
+                            ¡TICKETS GANADORES ENCONTRADOS (${matchingTickets.length})!
+                        </span>
+                        <span class="text-[10px] bg-emerald-200 text-emerald-900 font-black px-2 py-0.5 rounded-md">${lotFilter} - ${hourFilter}</span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        ${matchingTickets.map(tkt => `
+                            <div class="bg-white p-3 rounded-xl border border-emerald-200 shadow-sm space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="font-black text-indigo-700">${tkt.id}</span>
+                                    <span class="font-extrabold text-slate-700">Total: RD$ ${tkt.total.toFixed(2)}</span>
+                                </div>
+                                <div class="text-[11px] text-slate-600 space-y-1">
+                                    ${tkt.items.map(item => {
+                                        const itemNums = item.numbers.split(/[-,\s]+/);
+                                        const hits = itemNums.filter(n => searchNums.includes(n));
+                                        const isHit = hits.length > 0;
+                                        return `
+                                            <div class="flex justify-between items-center p-1.5 rounded-lg ${isHit ? 'bg-amber-50 border border-amber-200 font-bold text-slate-900' : 'bg-slate-50 text-slate-500'}">
+                                                <span>Número(s): <strong>${item.numbers}</strong></span>
+                                                ${isHit ? `<span class="text-amber-700 font-black text-[10px] bg-amber-100 px-2 py-0.5 rounded">★ Pegó: ${hits.join(', ')}</span>` : ''}
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                                <button onclick="viewTicketReceipt('${tkt.id}')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-xl text-xs transition">
+                                    Ver Ticket Completo
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateSearchHours() {
+            const lotName = document.getElementById('search-select-lottery').value;
+            const hourSelect = document.getElementById('search-select-hour');
+            
+            let hours = [];
+            if (lotName === 'ALL') {
+                appState.lotteries.forEach(l => hours.push(...l.hours));
+                hours = [...new Set(hours)];
+            } else {
+                const lot = appState.lotteries.find(l => l.name === lotName);
+                if (lot) hours = lot.hours;
+            }
+
+            hourSelect.innerHTML = `<option value="ALL">-- Todas las Horas --</option>` +
+                hours.map(h => `<option value="${h}">${h}</option>`).join('');
+        }
+
+        function performSearch() {
+            const lotFilter = document.getElementById('search-select-lottery').value;
+            const hourFilter = document.getElementById('search-select-hour').value;
+            const rawNumbers = document.getElementById('search-numbers-input').value.trim();
+
+            const searchNums = rawNumbers.split(/[-,\s]+/).filter(n => n.length > 0);
+
+            let results = appState.drawResults.filter(r => {
+                if (lotFilter !== 'ALL' && r.lottery !== lotFilter) return false;
+                if (hourFilter !== 'ALL' && r.hour !== hourFilter) return false;
+                if (searchNums.length > 0) {
+                    return searchNums.some(num => r.numbers.includes(num));
+                }
+                return true;
+            });
+
+            document.getElementById('search-count-badge').innerText = results.length;
+            const container = document.getElementById('search-results-list');
+
+            if (results.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-xs">No se encontraron sorteos coincidentes.</div>`;
+                return;
+            }
+
+            container.innerHTML = results.map(res => {
+                // Check if user bought matching tickets
+                const matchingTickets = appState.sales.filter(s => 
+                    s.lottery === res.lottery && 
+                    s.hour === res.hour &&
+                    s.items.some(item => {
+                        const itemNums = item.numbers.split(/[-,\s]+/);
+                        return itemNums.some(n => res.numbers.includes(n));
+                    })
+                );
+
+                return `
+                    <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <div>
+                                <h4 class="font-black text-slate-900 text-sm">${res.lottery}</h4>
+                                <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-md">${res.hour}</span>
+                            </div>
+                            <span class="text-xs text-slate-400 font-medium">${res.date}</span>
+                        </div>
+
+                        <div class="flex justify-center space-x-2 py-1">
+                            ${res.numbers.map(n => `
+                                <span class="w-10 h-10 rounded-full bg-emerald-700 text-white font-black flex items-center justify-center text-sm shadow-md">${n}</span>
+                            `).join('')}
+                        </div>
+
+                        ${matchingTickets.length > 0 ? `
+                            <div class="bg-amber-50 border border-amber-300 rounded-xl p-3 space-y-2">
+                                <span class="font-extrabold text-amber-900 text-xs flex items-center">
+                                    <i class="fa-solid fa-trophy mr-1.5 text-amber-600"></i> ¡Ticket Encontrado en Ventas!
+                                </span>
+                                ${matchingTickets.map(tkt => `
+                                    <div class="flex justify-between items-center text-xs bg-white p-2 rounded-lg border border-amber-200">
+                                        <span class="font-bold text-indigo-700">${tkt.id}</span>
+                                        <span class="font-black text-emerald-700">RD$ ${tkt.total.toFixed(2)}</span>
+                                        <button onclick="viewTicketReceipt('${tkt.id}')" class="bg-slate-900 text-white text-[10px] px-2 py-1 rounded-md font-bold">Ver Ticket</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function viewTicketReceipt(ticketId) {
+            const tkt = appState.sales.find(s => s.id === ticketId);
+            if (!tkt) return;
+
+            document.getElementById('receipt-id').innerText = tkt.id;
+            document.getElementById('receipt-date').innerText = tkt.date;
+            document.getElementById('receipt-lottery').innerText = `${tkt.lottery} (${tkt.hour})`;
+            document.getElementById('receipt-total').innerText = `RD$ ${tkt.total.toFixed(2)}`;
+
+            document.getElementById('receipt-items-list').innerHTML = tkt.items.map(i => `
+                <div class="flex justify-between">
+                    <span>${i.numbers} (${i.lottery})</span>
+                    <span class="font-bold">RD$ ${i.amount.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            openModal('print-modal');
+        }
+
+        // Admin Lotteries Logic
+        function renderAdminLotteries() {
+            const container = document.getElementById('admin-lotteries-list');
+            container.innerHTML = appState.lotteries.map(lot => `
+                <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <input type="text" value="${lot.name}" onchange="updateLotteryName('${lot.id}', this.value)" class="font-black text-slate-900 text-base border-b border-transparent hover:border-slate-300 focus:border-emerald-500 outline-none">
+                        <button onclick="deleteLottery('${lot.id}')" class="text-red-500 hover:text-red-700 text-xs font-bold p-1">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Eliminar
+                        </button>
+                    </div>
+
+                    <div>
+                        <span class="text-[11px] font-bold text-slate-500 block mb-1">Horarios:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${lot.hours.map(h => `
+                                <span class="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-lg border">${h}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <button onclick="openEditHoursModal('${lot.id}')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition">
+                        Editar Horarios
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function updateLotteryName(id, newName) {
+            const lot = appState.lotteries.find(l => l.id === id);
+            if (lot && newName.trim()) {
+                lot.name = newName.trim();
+                setStorageItem('lottery_config', JSON.stringify(appState.lotteries));
+                showToast('Nombre actualizado');
+            }
+        }
+
+        function deleteLottery(id) {
+            appState.lotteries = appState.lotteries.filter(l => l.id !== id);
+            setStorageItem('lottery_config', JSON.stringify(appState.lotteries));
+            renderAdminLotteries();
+            showToast('Lotería eliminada');
+        }
+
+        function openAddLotteryModal() {
+            document.getElementById('new-lottery-name').value = '';
+            document.getElementById('new-lottery-hours').value = '';
+            openModal('add-lottery-modal');
+        }
+
+        function saveNewLottery() {
+            const name = document.getElementById('new-lottery-name').value.trim();
+            const hoursRaw = document.getElementById('new-lottery-hours').value.trim();
+
+            if (!name || !hoursRaw) {
+                showToast('Complete todos los campos');
+                return;
+            }
+
+            const hours = hoursRaw.split(',').map(h => h.trim()).filter(h => h.length > 0);
+            appState.lotteries.push({
+                id: Date.now().toString(),
+                name: name,
+                hours: hours
+            });
+
+            setStorageItem('lottery_config', JSON.stringify(appState.lotteries));
+            closeModal('add-lottery-modal');
+            renderAdminLotteries();
+            showToast('Lotería guardada correctamente');
+        }
+
+        function openEditHoursModal(lotteryId) {
+            const lot = appState.lotteries.find(l => l.id === lotteryId);
+            if (!lot) return;
+
+            document.getElementById('edit-lottery-id').value = lotteryId;
+            document.getElementById('edit-hours-lottery-title').innerText = `Lotería: ${lot.name}`;
+            appState.tempEditingHours = [...lot.hours];
+            renderEditHoursChips();
+            openModal('edit-hours-modal');
+        }
+
+        function renderEditHoursChips() {
+            const container = document.getElementById('edit-hours-chips');
+            container.innerHTML = appState.tempEditingHours.map((h, i) => `
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-xl flex items-center space-x-1 border border-emerald-300">
+                    <span>${h}</span>
+                    <button onclick="removeHourChip(${i})" class="text-emerald-900 hover:text-red-600 font-extrabold ml-1"><i class="fa-solid fa-xmark"></i></button>
+                </span>
+            `).join('');
+        }
+
+        function addHourChip() {
+            const input = document.getElementById('new-single-hour-input');
+            const val = input.value.trim();
+            if (val) {
+                const hoursToAdd = val.split(',').map(h => h.trim()).filter(h => h.length > 0);
+                appState.tempEditingHours.push(...hoursToAdd);
+                input.value = '';
+                renderEditHoursChips();
+            }
+        }
+
+        function removeHourChip(index) {
+            appState.tempEditingHours.splice(index, 1);
+            renderEditHoursChips();
+        }
+
+        function saveEditedHours() {
+            const lotteryId = document.getElementById('edit-lottery-id').value;
+            const lot = appState.lotteries.find(l => l.id === lotteryId);
+            if (lot) {
+                lot.hours = [...appState.tempEditingHours];
+                setStorageItem('lottery_config', JSON.stringify(appState.lotteries));
+                renderAdminLotteries();
+                closeModal('edit-hours-modal');
+                showToast('Horarios actualizados');
+            }
+        }
+
+        // Sales & History Reports
+        function updateBalances() {
+            const totalSales = appState.sales.reduce((acc, s) => acc + s.total, 0);
+            const commission = totalSales * 0.10;
+            const finalTotal = totalSales - commission;
+
+            document.getElementById('dash-balance').innerText = `RD$ ${totalSales.toFixed(2)}`;
+            document.getElementById('term-balance').innerText = `RD$ ${totalSales.toFixed(2)}`;
+            document.getElementById('sum-ventas').innerText = `RD$ ${totalSales.toFixed(2)}`;
+            document.getElementById('sum-comision').innerText = `RD$ ${commission.toFixed(2)}`;
+            document.getElementById('sum-total').innerText = `RD$ ${finalTotal.toFixed(2)}`;
+        }
+
+        function renderSalesHistory() {
+            const container = document.getElementById('history-rows');
+            if (appState.sales.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-xs">No hay ventas registradas.</div>`;
+                return;
+            }
+
+            container.innerHTML = appState.sales.map(s => `
+                <div class="grid grid-cols-4 text-xs font-semibold py-2 px-2 bg-white border rounded-xl items-center text-center">
+                    <span class="font-bold text-indigo-700">${s.id}</span>
+                    <span class="text-slate-700 text-[11px]">${s.lottery}</span>
+                    <span class="text-slate-500 text-[10px]">${s.hour}</span>
+                    <span class="font-black text-emerald-700">RD$ ${s.total.toFixed(2)}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderSoldTickets() {
+            const container = document.getElementById('tk-vendidos-list');
+            if (appState.sales.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-xs">No hay tickets emitidos.</div>`;
+                return;
+            }
+
+            container.innerHTML = appState.sales.map((s, index) => `
+                <div class="bg-white p-3 rounded-2xl border flex items-center justify-between">
+                    <div>
+                        <span class="font-black text-indigo-700 text-xs block">${s.id}</span>
+                        <span class="text-[11px] text-slate-600 font-semibold">${s.lottery} - ${s.hour}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-extrabold text-slate-900 text-xs">RD$ ${s.total.toFixed(2)}</span>
+                        <button onclick="cancelSoldTicket(${index})" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1 rounded-xl text-xs font-bold transition">Anular</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function cancelSoldTicket(index) {
+            appState.sales.splice(index, 1);
+            setStorageItem('lottery_sales', JSON.stringify(appState.sales));
+            renderSoldTickets();
+            updateBalances();
+            showToast('Ticket anulado');
+        }
+
+        function renderWinningTickets() {
+            const container = document.getElementById('winning-tickets-container');
+            const winningSales = appState.sales.filter(s => 
+                appState.drawResults.some(r => 
+                    r.lottery === s.lottery && 
+                    r.hour === s.hour &&
+                    s.items.some(item => {
+                        const nums = item.numbers.split(/[-,\s]+/);
+                        return nums.some(n => r.numbers.includes(n));
+                    })
+                )
+            );
+
+            if (winningSales.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 py-8 text-xs">No hay tickets premiados confirmados.</div>`;
+                return;
+            }
+
+            container.innerHTML = winningSales.map(s => `
+                <div class="bg-white p-4 rounded-2xl border border-emerald-300 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="font-black text-emerald-800 text-xs block">${s.id} ★</span>
+                        <span class="text-[11px] text-slate-600 font-semibold">${s.lottery} (${s.hour})</span>
+                    </div>
+                    <button onclick="viewTicketReceipt('${s.id}')" class="bg-emerald-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl shadow">Ver Ticket</button>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
