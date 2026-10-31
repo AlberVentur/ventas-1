@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotería</title>
+    <title>Sistema de Lotería y Búsqueda de Tickets</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -14,12 +14,50 @@
             #thermal-print-area, #thermal-print-area * { visibility: visible; }
             #thermal-print-area { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 20px; }
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-800 antialiased selection:bg-emerald-500 selection:text-white flex justify-center min-h-screen">
 
-    <!-- Mobile Device Container (Direct Access without Password) -->
-    <div id="app" class="w-full max-w-md min-h-screen bg-slate-50 shadow-2xl flex flex-col relative overflow-hidden">
+    <!-- Auth / Password Screen Container -->
+    <div id="auth-screen" class="w-full max-w-md min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-white relative z-50">
+        <div class="w-20 h-20 bg-emerald-600 rounded-3xl flex items-center justify-center text-4xl shadow-lg shadow-emerald-500/20 mb-6">
+            <i class="fa-solid fa-vault"></i>
+        </div>
+        <h2 class="text-2xl font-black text-center mb-1">Acceso a Terminal</h2>
+        <p class="text-xs text-slate-400 mb-8 text-center" id="auth-subtitle">Ingrese su Contraseña para acceder (Clave: 203031)</p>
+
+        <div class="w-full space-y-4">
+            <div class="relative">
+                <input type="password" id="login-password" maxlength="12" placeholder="Contraseña..." onkeyup="if(event.key === 'Enter') checkPassword()" class="w-full bg-slate-900 border border-slate-700 rounded-2xl py-3.5 px-4 text-center text-xl font-bold tracking-widest text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+
+            <button onclick="checkPassword()" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-98 transition text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-emerald-600/30 text-sm tracking-wide">
+                ENTRAR AL SISTEMA
+            </button>
+
+            <div class="text-center pt-4">
+                <button onclick="toggleChangePin()" class="text-xs text-slate-500 hover:text-slate-300 transition underline">
+                    ¿Configurar / Cambiar clave?
+                </button>
+            </div>
+        </div>
+
+        <!-- Dynamic PIN Setup Form (Hidden by default) -->
+        <div id="pin-setup-form" class="hidden w-full border-t border-slate-800 mt-6 pt-6 space-y-3">
+            <p class="text-xs font-bold text-emerald-400 text-center">Configurar Nueva Contraseña</p>
+            <input type="password" id="new-pin-1" placeholder="Nueva Contraseña..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-sm text-center text-white">
+            <input type="password" id="new-pin-2" placeholder="Confirmar..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-sm text-center text-white">
+            <button onclick="saveNewPassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-xs font-bold py-2.5 rounded-xl text-white">
+                Guardar Nueva Clave
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Mobile Device Container -->
+    <div id="app" class="hidden w-full max-w-md min-h-screen bg-slate-50 shadow-2xl flex flex-col relative overflow-hidden">
         
         <!-- Top Navbar -->
         <header class="bg-emerald-800 text-white px-4 py-3 flex items-center justify-between shadow-md z-20">
@@ -27,11 +65,11 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div class="text-center">
-                <span class="block text-[10px] font-medium text-emerald-200 uppercase tracking-widest">Lotería</span>
-                <h1 class="text-sm font-extrabold tracking-wide">Terminal Activa</h1>
+                <span class="block text-[10px] font-medium text-emerald-200 uppercase tracking-widest">Lotería Dominicana</span>
+                <h1 class="text-sm font-extrabold tracking-wide">Terminal de Ventas</h1>
             </div>
-            <button onclick="switchView('balance')" class="p-2 text-emerald-200 hover:text-white transition">
-                <i class="fa-solid fa-wallet text-lg"></i>
+            <button onclick="lockSystem()" class="p-2 text-emerald-200 hover:text-white transition" title="Bloquear / Salir">
+                <i class="fa-solid fa-lock text-lg"></i>
             </button>
         </header>
 
@@ -40,12 +78,12 @@
             <div id="sidebar-content" class="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-2xl p-6 flex flex-col transform -translate-x-full transition-transform duration-300" onclick="event.stopPropagation()">
                 <div class="flex items-center justify-between border-b pb-4 mb-4">
                     <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-2xl shadow-md">
+                        <div class="w-12 h-12 rounded-full bg-emerald-700 text-white flex items-center justify-center font-black text-2xl shadow-md">
                             ★
                         </div>
                         <div>
-                            <h3 class="font-extrabold text-slate-900 text-base">Lotería</h3>
-                            <p class="text-xs text-slate-500 font-medium">Banca Autorizada</p>
+                            <h3 class="font-extrabold text-slate-900 text-base">Banca Central</h3>
+                            <p class="text-xs text-slate-500 font-medium">Terminal Autorizada</p>
                         </div>
                     </div>
                     <button onclick="toggleMenu()" class="text-slate-400 hover:text-slate-600 p-1">
@@ -54,17 +92,21 @@
                 </div>
 
                 <!-- Navigation List -->
-                <nav class="space-y-1 flex-1 overflow-y-auto pr-1 text-sm font-semibold">
+                <nav class="space-y-1 flex-1 overflow-y-auto pr-1 text-sm font-semibold custom-scrollbar">
                     <button onclick="switchView('dashboard'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
                         <i class="fa-solid fa-house w-6 text-emerald-600"></i>
                         <span>INICIO</span>
                     </button>
                     <button onclick="switchView('vender'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
                         <i class="fa-solid fa-ticket w-6 text-blue-600"></i>
-                        <span>POS</span>
+                        <span>POS / VENDER</span>
+                    </button>
+                    <button onclick="switchView('buscador-ganadores'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-amber-50 text-slate-700 hover:text-amber-800 transition">
+                        <i class="fa-solid fa-magnifying-glass-chart w-6 text-amber-500"></i>
+                        <span>BUSCAR NÚMEROS GANADORES</span>
                     </button>
                     <button onclick="switchView('tk-ganadores'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
-                        <i class="fa-solid fa-award w-6 text-amber-500"></i>
+                        <i class="fa-solid fa-award w-6 text-amber-600"></i>
                         <span>TK Ganadores</span>
                     </button>
                     <button onclick="switchView('ventas'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
@@ -75,31 +117,25 @@
                         <i class="fa-solid fa-file-invoice w-6 text-indigo-600"></i>
                         <span>TK VENDIDOS</span>
                     </button>
-                    <button onclick="switchView('ganadores-list'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
-                        <i class="fa-solid fa-trophy w-6 text-yellow-600"></i>
-                        <span># GANADORES (Buscador)</span>
-                    </button>
-                    <button onclick="switchView('gestion-loterias'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
-                        <i class="fa-solid fa-list-check w-6 text-purple-600"></i>
-                        <span>Gestionar Loterías</span>
-                    </button>
-                    <button onclick="showToast('Permite Quiniela, Palé, Tripleta y Super Palé'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 transition">
-                        <i class="fa-solid fa-circle-question w-6 text-cyan-600"></i>
-                        <span>Como jugar?</span>
+                    <button onclick="switchView('gestion-loterias'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-purple-50 text-slate-700 hover:text-purple-800 transition">
+                        <i class="fa-solid fa-sliders w-6 text-purple-600"></i>
+                        <span>GESTIONAR LOTERÍAS</span>
                     </button>
 
                     <div class="border-t my-2 pt-2 space-y-1">
-                        <button onclick="openModal('cancel-modal'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition">
-                            <i class="fa-solid fa-ban w-6"></i>
-                            <span>Cancelar ticket</span>
-                        </button>
-                        <button onclick="openModal('pay-modal'); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 text-emerald-700 transition">
-                            <i class="fa-solid fa-money-bills w-6"></i>
-                            <span>Pagar ticket</span>
+                        <button onclick="lockSystem(); toggleMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition">
+                            <i class="fa-solid fa-right-from-bracket w-6"></i>
+                            <span>Cerrar Sesión</span>
                         </button>
                     </div>
                 </nav>
             </div>
+        </div>
+
+        <!-- Toast Notifications System -->
+        <div id="toast" class="fixed top-16 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold z-50 hidden transition-all duration-300 flex items-center space-x-2 border border-slate-700">
+            <i class="fa-solid fa-circle-info text-emerald-400"></i>
+            <span id="toast-msg">Mensaje de notificación</span>
         </div>
 
         <!-- Main Content Area -->
@@ -107,51 +143,51 @@
 
             <!-- VIEW 1: DASHBOARD -->
             <section id="view-dashboard" class="view-section flex-1 flex flex-col p-4 space-y-4">
-                <div class="bg-gradient-to-br from-emerald-800 to-emerald-900 text-white rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
+                <div class="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white rounded-2xl p-6 shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
                     <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-emerald-600/30 rounded-full blur-xl pointer-events-none"></div>
-                    <span class="text-xs uppercase tracking-widest text-emerald-200 font-semibold mb-1">Balance Actual (Ventas)</span>
-                    <h2 id="dash-balance" class="text-3xl font-black tracking-tight">$0.00</h2>
+                    <span class="text-xs uppercase tracking-widest text-emerald-200 font-semibold mb-1">Ventas Acumuladas Hoy</span>
+                    <h2 id="dash-balance" class="text-3xl font-black tracking-tight">RD$ 0.00</h2>
                     <span class="text-xs text-emerald-300 mt-2 flex items-center">
-                        <i class="fa-solid fa-circle text-emerald-400 text-[8px] mr-1.5 animate-pulse"></i> Sorteos en Tiempo Real
+                        <i class="fa-solid fa-circle text-emerald-400 text-[8px] mr-1.5 animate-pulse"></i> Terminal Operativa
                     </span>
                 </div>
 
                 <!-- Action Grid -->
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="switchView('vender')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-3 hover:border-blue-500 hover:shadow-md transition group">
-                        <div class="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-inner">
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="switchView('vender')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-2 hover:border-blue-500 transition group">
+                        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner">
                             <i class="fa-solid fa-hand-holding-dollar"></i>
                         </div>
-                        <span class="font-bold text-slate-700 text-sm">Vender</span>
+                        <span class="font-bold text-slate-700 text-xs">Vender POS</span>
                     </button>
 
-                    <button onclick="switchView('balance')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-3 hover:border-amber-500 hover:shadow-md transition group">
-                        <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-inner">
-                            <i class="fa-solid fa-wallet"></i>
+                    <button onclick="switchView('buscador-ganadores')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-2 hover:border-amber-500 transition group">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-magnifying-glass"></i>
                         </div>
-                        <span class="font-bold text-slate-700 text-sm">Balance</span>
+                        <span class="font-bold text-slate-700 text-xs">Buscador Números</span>
                     </button>
 
-                    <button onclick="switchView('ventas')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-3 hover:border-emerald-500 hover:shadow-md transition group">
-                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-inner">
-                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <button onclick="switchView('gestion-loterias')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-2 hover:border-purple-500 transition group">
+                        <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-sliders"></i>
                         </div>
-                        <span class="font-bold text-slate-700 text-sm">Historial</span>
+                        <span class="font-bold text-slate-700 text-xs">Editar Loterías</span>
                     </button>
 
-                    <button onclick="openModal('cash-modal')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-3 hover:border-orange-500 hover:shadow-md transition group">
-                        <div class="w-14 h-14 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-inner">
-                            <i class="fa-solid fa-money-bill-transfer"></i>
+                    <button onclick="switchView('tk-ganadores')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col items-center justify-center space-y-2 hover:border-emerald-500 transition group">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner">
+                            <i class="fa-solid fa-award"></i>
                         </div>
-                        <span class="font-bold text-slate-700 text-sm">Efectivo</span>
+                        <span class="font-bold text-slate-700 text-xs">Tickets Ganadores</span>
                     </button>
                 </div>
 
-                <div class="bg-blue-50 border border-blue-200/60 rounded-xl p-4 flex items-center space-x-3 text-blue-900 shadow-sm">
-                    <i class="fa-solid fa-bullhorn text-blue-600 text-lg"></i>
-                    <div class="text-xs">
-                        <span class="font-bold block mb-0.5">Jugadas Múltiples y Tripletas</span>
-                        Ingrese varios números separados por guiones (ej: 24-15 o 10-22-33) en el POS y se sumarán al balance automáticamente.
+                <div class="bg-amber-50 border border-amber-200/70 rounded-2xl p-4 flex items-start space-x-3 text-amber-900 shadow-sm">
+                    <i class="fa-solid fa-star text-amber-600 text-lg mt-0.5"></i>
+                    <div class="text-xs space-y-1">
+                        <span class="font-bold block text-slate-900">Buscador & Verificación de Tickets</span>
+                        <p class="text-slate-600 leading-relaxed">Diríjase a "BUSCAR NÚMEROS GANADORES" para filtrar por lotería, hora o ingresar múltiples números. Si hay coincidencia exacta de lotería y hora, se mostrará el Ticket original inmediatamente.</p>
                     </div>
                 </div>
             </section>
@@ -159,36 +195,35 @@
             <!-- VIEW 2: VENDER (POS Terminal) -->
             <section id="view-vender" class="view-section hidden flex-1 flex flex-col">
                 <div class="bg-white border-b px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 font-semibold shadow-xs">
-                    <span>BAL: <strong id="term-balance" class="text-emerald-700">$0.00</strong></span>
+                    <span>Ventas Hoy: <strong id="term-balance" class="text-emerald-700">RD$0.00</strong></span>
                     <button onclick="openLotteryModal()" id="selected-lottery-btn" class="bg-slate-100 hover:bg-slate-200 text-slate-900 px-3 py-1.5 rounded-xl flex items-center space-x-1 font-bold transition shadow-2xs">
                         <i class="fa-solid fa-ticket text-emerald-600 mr-1"></i>
-                        <span id="current-lottery-name">ANG 10AM</span>
+                        <span id="current-lottery-name">SELECCIONAR LOTERÍA</span>
                         <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i>
                     </button>
                 </div>
 
-                <div class="grid grid-cols-5 bg-slate-200/80 text-[11px] font-bold text-slate-600 px-4 py-1.5 text-center">
+                <div class="grid grid-cols-4 bg-slate-200/80 text-[11px] font-bold text-slate-600 px-4 py-1.5 text-center">
                     <div>Números</div>
                     <div>Lotería</div>
-                    <div>Comb</div>
-                    <div>Forma</div>
+                    <div>Hora</div>
                     <div>Monto</div>
                 </div>
 
-                <div id="ticket-items-container" class="flex-1 overflow-y-auto max-h-44 p-2 space-y-1 bg-white border-b min-h-[110px]">
-                    <div id="empty-ticket-msg" class="text-center text-slate-400 py-10 text-xs">
-                        Ingrese números y monto usando el teclado táctil abajo.
+                <div id="ticket-items-container" class="flex-1 overflow-y-auto max-h-44 p-2 space-y-1 bg-white border-b min-h-[110px] custom-scrollbar">
+                    <div id="empty-ticket-msg" class="text-center text-slate-400 py-8 text-xs">
+                        Ingrese números (ej: 25 o 25-88) y el monto con el teclado.
                     </div>
                 </div>
 
                 <div class="bg-slate-100 p-3 border-t flex items-center justify-between gap-2">
-                    <button onclick="copyTicket()" class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1 hover:bg-slate-50 transition shadow-2xs">
-                        <i class="fa-solid fa-copy text-slate-500"></i>
-                        <span>Copiar</span>
+                    <button onclick="clearCurrentTicket()" class="bg-white border border-slate-300 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1 hover:bg-slate-50 transition shadow-2xs">
+                        <i class="fa-solid fa-trash-can text-red-500"></i>
+                        <span>Limpiar</span>
                     </button>
                     <div class="flex items-center space-x-2">
-                        <span class="text-xs text-slate-500 font-semibold">Total:</span>
-                        <span id="ticket-total-display" class="text-base font-extrabold text-slate-900">RD$0.00</span>
+                        <span class="text-xs text-slate-500 font-semibold">Total Ticket:</span>
+                        <span id="ticket-total-display" class="text-base font-extrabold text-slate-900">RD$ 0.00</span>
                     </div>
                 </div>
 
@@ -219,893 +254,346 @@
                     <button onclick="pressKey('8')" class="bg-white active:bg-slate-300 rounded-xl py-3 text-lg font-bold text-slate-800 shadow-xs">8</button>
                     <button onclick="pressKey('9')" class="bg-white active:bg-slate-300 rounded-xl py-3 text-lg font-bold text-slate-800 shadow-xs">9</button>
 
-                    <button onclick="pressKey('.')" class="bg-white active:bg-slate-300 rounded-xl py-3 text-lg font-bold text-slate-800 shadow-xs">.</button>
                     <button onclick="pressKey('0')" class="bg-white active:bg-slate-300 rounded-xl py-3 text-lg font-bold text-slate-800 shadow-xs">0</button>
                     <button onclick="pressKey('-')" class="bg-white active:bg-slate-300 rounded-xl py-3 text-lg font-bold text-slate-800 shadow-xs">-</button>
+                    <button onclick="confirmAndPrintTicket()" class="bg-indigo-600 active:bg-indigo-700 text-white rounded-xl py-3 text-sm font-extrabold shadow-md flex items-center justify-center">
+                        <i class="fa-solid fa-print"></i>
+                    </button>
                 </div>
             </section>
 
-            <!-- VIEW 3: TK GANADORES -->
+            <!-- VIEW 3: BUSCADOR DE NÚMEROS GANADORES (NUEVO & REQUERIDO) -->
+            <section id="view-buscador-ganadores" class="view-section hidden flex-1 flex flex-col p-4 space-y-4">
+                <div class="flex items-center justify-between border-b pb-2">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Buscador de Sorteos</h3>
+                        <p class="text-[11px] text-slate-500">Filtre por lotería, hora e ingrese números jugados.</p>
+                    </div>
+                    <span class="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold">Filtro Vivo</span>
+                </div>
+
+                <!-- Form Controls for Filtering -->
+                <div class="bg-white p-3.5 rounded-2xl border shadow-sm space-y-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">1. Seleccionar Lotería:</label>
+                        <select id="search-select-lottery" onchange="updateSearchHours(); performSearch();" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="ALL">-- Todas las Loterías --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">2. Seleccionar Hora de Sorteo:</label>
+                        <select id="search-select-hour" onchange="performSearch()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="ALL">-- Todas las Horas --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">3. Números a buscar (Permite varios: ej: 12-45-88):</label>
+                        <div class="relative">
+                            <input type="text" id="search-numbers-input" oninput="performSearch()" placeholder="Ingrese uno o varios números..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <i class="fa-solid fa-hashtag absolute left-3 top-3 text-slate-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results Area -->
+                <div class="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+                    <h4 class="font-extrabold text-xs text-slate-500 uppercase tracking-wider flex justify-between items-center">
+                        <span>Resultados Encontrados</span>
+                        <span id="search-count-badge" class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-[10px]">0</span>
+                    </h4>
+
+                    <div id="search-results-list" class="space-y-3">
+                        <!-- Dynamic Results -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 4: TK GANADORES DE CLIENTES -->
             <section id="view-tk-ganadores" class="view-section hidden flex-1 p-4 space-y-4">
                 <div class="flex items-center justify-between">
-                    <h3 class="font-extrabold text-slate-900 text-lg">Tickets Ganadores</h3>
-                    <span class="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold">Por Sorteo</span>
+                    <h3 class="font-extrabold text-slate-900 text-lg">Tickets Premiados</h3>
+                    <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">Verificados</span>
                 </div>
-                <p class="text-xs text-slate-500">Tickets vendidos cuyos números coinciden exactamente con la lotería correspondiente:</p>
-                <div id="winning-tickets-container" class="space-y-3 flex-1 overflow-y-auto">
+                <p class="text-xs text-slate-500">Tickets generados en la terminal con aciertos confirmados:</p>
+                <div id="winning-tickets-container" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
                     <!-- Dynamic -->
                 </div>
             </section>
 
-            <!-- VIEW 4: VENTAS / HISTORIAL -->
+            <!-- VIEW 5: GESTIÓN Y EDICIÓN DE LOTERÍAS (NUEVO & REQUERIDO) -->
+            <section id="view-gestion-loterias" class="view-section hidden flex-1 flex flex-col p-4 space-y-4 overflow-y-auto custom-scrollbar">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-lg">Gestión de Loterías</h3>
+                        <p class="text-xs text-slate-500">Edite nombres, cambie horas o elimine loterías.</p>
+                    </div>
+                    <button onclick="openAddLotteryModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-bold shadow transition flex items-center space-x-1">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Nueva</span>
+                    </button>
+                </div>
+
+                <div id="admin-lotteries-list" class="space-y-3 flex-1">
+                    <!-- Dynamic Lotteries Editor Cards -->
+                </div>
+            </section>
+
+            <!-- VIEW 6: VENTAS / HISTORIAL -->
             <section id="view-ventas" class="view-section hidden flex-1 flex flex-col p-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-extrabold text-slate-900 text-lg">Historial de Ventas</h3>
-                    <span class="text-xs bg-white px-3 py-1.5 rounded-xl border font-semibold text-slate-700 shadow-2xs" id="current-date-label">oct 28</span>
+                    <span class="text-xs bg-white px-3 py-1 rounded-xl border font-semibold text-slate-700 shadow-2xs" id="current-date-label">Hoy</span>
                 </div>
 
-                <div class="grid grid-cols-7 bg-slate-200/80 text-[10px] font-bold text-slate-700 px-2 py-2 rounded-t-xl text-center">
-                    <div>Fecha</div>
-                    <div>Inicial</div>
-                    <div>Res.</div>
-                    <div>Entrega</div>
-                    <div>Recib.</div>
-                    <div>Pres.</div>
-                    <div>Bal.</div>
+                <div class="grid grid-cols-4 bg-slate-200/80 text-[10px] font-bold text-slate-700 px-2 py-2 rounded-t-xl text-center">
+                    <div>Ticket ID</div>
+                    <div>Lotería</div>
+                    <div>Hora</div>
+                    <div>Monto</div>
                 </div>
 
-                <div id="history-rows" class="space-y-1.5 flex-1 overflow-y-auto">
+                <div id="history-rows" class="space-y-1.5 flex-1 overflow-y-auto custom-scrollbar">
                     <!-- Dynamic -->
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-2 text-xs">
                     <div class="flex justify-between border-b pb-1.5 text-slate-600">
-                        <span>Ventas:</span>
-                        <span id="sum-ventas" class="font-bold text-slate-900">$0.00</span>
+                        <span>Ventas Totales:</span>
+                        <span id="sum-ventas" class="font-bold text-slate-900">RD$ 0.00</span>
                     </div>
                     <div class="flex justify-between border-b pb-1.5 text-slate-600">
-                        <span>Comision:</span>
-                        <span id="sum-comision" class="font-bold text-blue-600">-$0.00</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-1.5 text-slate-600">
-                        <span>D/B:</span>
-                        <span class="font-bold text-slate-700">-$0.00</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-1.5 text-slate-600">
-                        <span>Ganaron:</span>
-                        <span class="font-bold text-emerald-700">-$0.00</span>
+                        <span>Comisión Est. (10%):</span>
+                        <span id="sum-comision" class="font-bold text-blue-600">RD$ 0.00</span>
                     </div>
                     <div class="flex justify-between pt-1 text-slate-900 font-extrabold text-sm">
-                        <span>Balance total:</span>
-                        <span id="sum-total" class="text-emerald-700">$0.00</span>
+                        <span>Balance Final:</span>
+                        <span id="sum-total" class="text-emerald-700">RD$ 0.00</span>
                     </div>
                 </div>
             </section>
 
-            <!-- VIEW 5: TK VENDIDOS (Eliminación de pedidos) -->
+            <!-- VIEW 7: TK VENDIDOS (Gestión de eliminación de tickets) -->
             <section id="view-tk-vendidos" class="view-section hidden flex-1 flex flex-col p-4 space-y-3">
                 <div class="flex items-center justify-between">
-                    <h3 class="font-extrabold text-slate-900 text-lg">Tickets Vendidos</h3>
-                    <span class="text-xs bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-bold">Gestión de Pedidos</span>
+                    <h3 class="font-extrabold text-slate-900 text-lg">Tickets Emitidos</h3>
+                    <span class="text-xs bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-bold">Anulación</span>
                 </div>
-                <p class="text-xs text-slate-500">Puede eliminar o cancelar pedidos de tickets antes del sorteo:</p>
+                <p class="text-xs text-slate-500">Puede cancelar cualquier ticket vendido antes del sorteo:</p>
 
-                <div class="grid grid-cols-5 bg-slate-200/80 text-[11px] font-bold text-slate-700 px-2 py-2 rounded-t-xl text-center">
-                    <div>ID</div>
-                    <div>Lotería</div>
-                    <div>Número</div>
-                    <div>Total</div>
-                    <div>Acción</div>
-                </div>
-
-                <div id="tk-vendidos-list" class="space-y-1.5 flex-1 overflow-y-auto">
+                <div id="tk-vendidos-list" class="space-y-2 flex-1 overflow-y-auto custom-scrollbar">
                     <!-- Dynamic -->
                 </div>
-            </section>
-
-            <!-- VIEW 6: # GANADORES (Buscador & Live Google Results grouped) -->
-            <section id="view-ganadores-list" class="view-section hidden flex-1 flex flex-col p-4 space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-extrabold text-slate-900 text-lg">Buscador de Sorteos</h3>
-                    <button onclick="fetchLiveResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow transition flex items-center space-x-1">
-                        <i class="fa-solid fa-rotate mr-1"></i> Sincronizar Google
-                    </button>
-                </div>
-                
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-xs"></i>
-                    <input type="text" id="lottery-search-input" oninput="filterGanadoresList()" placeholder="Buscar por nombre (ej: ANG, Leidsa, Real) o número..." class="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-2xs">
-                </div>
-
-                <div class="flex items-center justify-between text-[11px] text-slate-500 font-semibold px-1">
-                    <span id="date-label-results">Fecha: 28/10/2026</span>
-                    <span>Todas las Loterías</span>
-                </div>
-
-                <div id="ganadores-list-container" class="space-y-2 flex-1 overflow-y-auto pr-1">
-                    <!-- Dynamic -->
-                </div>
-            </section>
-
-            <!-- VIEW 8: GESTIONAR LOTERIAS (Agregar / Quitar Loterías) -->
-            <section id="view-gestion-loterias" class="view-section hidden flex-1 flex flex-col p-4 space-y-4 overflow-y-auto">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-extrabold text-slate-900 text-lg">Gestión de Loterías</h3>
-                    <button onclick="openModal('add-lottery-modal')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow transition flex items-center space-x-1">
-                        <i class="fa-solid fa-plus mr-1"></i> Agregar Lotería
-                    </button>
-                </div>
-                <p class="text-xs text-slate-500">Agregue o elimine loterías del sistema a su gusto:</p>
-                <div id="gestion-loterias-container" class="space-y-2 flex-1">
-                    <!-- Dynamic -->
-                </div>
-            </section>
-
-            <!-- VIEW 7: BALANCE & CORTES -->
-            <section id="view-balance" class="view-section hidden flex-1 p-4 space-y-4">
-                <h3 class="font-extrabold text-slate-900 text-lg">Balance Financiero</h3>
-                <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3 text-sm">
-                    <div class="flex justify-between border-b pb-2.5">
-                        <span class="text-slate-600 font-medium">Balance Inicial</span>
-                        <span class="font-extrabold text-slate-500">$0.00</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-2.5">
-                        <span class="text-slate-600 font-medium">Ventas Acumuladas</span>
-                        <span id="bal-ventas" class="font-extrabold text-emerald-700">$0.00</span>
-                    </div>
-                    <div class="flex justify-between border-b pb-2.5">
-                        <span class="text-slate-600 font-medium">Comisiones (10%)</span>
-                        <span id="bal-comision" class="font-bold text-blue-600">$0.00</span>
-                    </div>
-                    <div class="flex justify-between pt-1">
-                        <span class="text-slate-900 font-black">Balance Neto</span>
-                        <span id="bal-final" class="font-black text-emerald-700 text-base">$0.00</span>
-                    </div>
-                </div>
-                <button onclick="showToast('Corte de caja procesado con éxito')" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3.5 rounded-xl shadow transition text-sm">
-                    Consultar Balance
-                </button>
             </section>
 
         </main>
     </div>
 
-    <!-- THERMAL TICKET INVOICE / PRINTING MODAL -->
-    <div id="print-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('print-modal')">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+    <!-- THERMAL TICKET PRINT / DISPLAY MODAL -->
+    <div id="print-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('print-modal')">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-extrabold text-lg text-slate-900">Factura de Ticket</h3>
-                <button onclick="closeModal('print-modal')" class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-extrabold text-base text-slate-900 flex items-center">
+                    <i class="fa-solid fa-receipt text-emerald-600 mr-2"></i> Ticket Oficial
+                </h3>
+                <button onclick="closeModal('print-modal')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-bold hover:bg-slate-200"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
-            <!-- Thermal Ticket Preview Area -->
-            <div id="thermal-print-area" class="bg-slate-50 p-4 rounded-xl border font-mono text-[11px] text-slate-800 space-y-2">
+            <div id="thermal-print-area" class="bg-slate-50 p-4 rounded-xl border font-mono text-xs text-slate-800 space-y-2 shadow-inner">
                 <div class="text-center border-b pb-2">
-                    <h4 class="font-black text-sm uppercase">LOTERÍA</h4>
-                    <p class="text-[10px]">Banca Autorizada Dominicana</p>
-                    <p id="receipt-date" class="text-[10px] text-slate-500">28/10/2026 - 10:56 PM</p>
+                    <h4 class="font-black text-base tracking-wide uppercase">BANCA DE LOTERÍA</h4>
+                    <p class="text-[10px] text-slate-500">Comprobante Oficial de Jugada</p>
+                    <p id="receipt-date" class="text-[10px] font-semibold text-slate-600 mt-1">--/--/---- --:--</p>
                 </div>
-                <div class="flex justify-between font-bold border-b pb-1">
-                    <span id="receipt-id">TKT-8842</span>
-                    <span id="receipt-lottery">ANG 10AM</span>
+                <div class="flex justify-between font-bold border-b pb-1 text-xs">
+                    <span id="receipt-id" class="text-indigo-700">TKT-0000</span>
+                    <span id="receipt-lottery" class="text-slate-900">LOTERIA</span>
                 </div>
-                <div id="receipt-items-list" class="space-y-1 py-1 border-b">
-                    <!-- Populated dynamically -->
+                <div id="receipt-items-list" class="space-y-1 py-1 border-b text-xs">
+                    <!-- Dynamic -->
                 </div>
-                <div class="flex justify-between font-black text-xs pt-1">
+                <div class="flex justify-between font-black text-sm pt-1">
                     <span>TOTAL:</span>
-                    <span id="receipt-total">RD$0.00</span>
+                    <span id="receipt-total" class="text-emerald-700">RD$ 0.00</span>
                 </div>
-                <div class="text-center pt-2">
-                    <div class="tracking-widest text-lg font-bold text-slate-900">||| |||| ||||| ||||</div>
-                    <p class="text-[9px] text-slate-400">Conserve su ticket. Pago sujeto a reglas.</p>
+                <div class="text-center pt-2 space-y-1">
+                    <div class="tracking-widest text-base font-bold text-slate-800">||| |||| ||||| ||||</div>
+                    <p class="text-[9px] text-slate-400">Conserve este comprobante para cobrar su premio.</p>
                 </div>
             </div>
 
             <div class="flex space-x-2">
-                <button onclick="closeModal('print-modal')" class="flex-1 bg-slate-200 text-slate-800 font-bold py-3 rounded-xl text-xs">Cerrar</button>
-                <button onclick="triggerThermalPrint()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow flex items-center justify-center space-x-1.5">
+                <button onclick="closeModal('print-modal')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-xl text-xs transition">Cerrar</button>
+                <button onclick="triggerThermalPrint()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow transition flex items-center justify-center space-x-1.5">
                     <i class="fa-solid fa-print"></i>
-                    <span>Imprimir Ticket</span>
+                    <span>Imprimir</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- LOTTERY SELECTION MODAL -->
+    <!-- LOTTERY SELECTION MODAL (POS) -->
     <div id="lottery-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-end justify-center transition-opacity backdrop-blur-xs" onclick="closeLotteryModal()">
-        <div class="bg-slate-50 w-full max-w-md rounded-t-3xl max-h-[85vh] flex flex-col overflow-hidden transform translate-y-full transition-transform duration-300 shadow-2xl" id="lottery-modal-content" onclick="event.stopPropagation()">
+        <div class="bg-slate-50 w-full max-w-md rounded-t-3xl max-h-[80vh] flex flex-col overflow-hidden transform translate-y-full transition-transform duration-300 shadow-2xl" id="lottery-modal-content" onclick="event.stopPropagation()">
             <div class="p-4 bg-white border-b flex items-center justify-between">
-                <h3 class="font-extrabold text-slate-900 text-base">Sorteos Disponibles</h3>
+                <h3 class="font-extrabold text-slate-900 text-base">Seleccionar Lotería y Hora</h3>
                 <button onclick="closeLotteryModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
             
-            <div id="lottery-list-container" class="flex-1 overflow-y-auto p-3 space-y-2">
+            <div id="lottery-list-container" class="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
                 <!-- Dynamic -->
             </div>
 
-            <div class="p-4 bg-white border-t">
-                <button onclick="closeLotteryModal()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow transition text-sm">
-                    Cerrar
+            <div class="p-3 bg-white border-t">
+                <button onclick="closeLotteryModal()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-xl transition text-xs">
+                    Cancelar
                 </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- WINNING NUMBERS DETAIL MODAL -->
-    <div id="winning-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('winning-modal')">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 id="modal-lottery-title" class="font-extrabold text-lg text-slate-900">Resultado Sorteo</h3>
-                <button onclick="closeModal('winning-modal')" class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="text-center py-4 space-y-3">
-                <span id="modal-lottery-schedule" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">Fecha: 28/10/2026</span>
-                <div id="modal-lottery-numbers" class="text-3xl font-black text-emerald-700 tracking-wider pt-2">
-                    00 - 00 - 00
-                </div>
-                <div id="modal-lottery-details" class="text-xs bg-slate-100 p-2.5 rounded-xl text-slate-600">
-                    Sincronizado con Google y servidores oficiales de lotería.
-                </div>
-            </div>
-            <button onclick="closeModal('winning-modal')" class="w-full bg-emerald-700 text-white font-bold py-3 rounded-xl shadow text-sm">
-                Aceptar
-            </button>
-        </div>
-    </div>
-
-    <!-- CANCEL TICKET MODAL -->
-    <div id="cancel-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('cancel-modal')">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-extrabold text-lg text-slate-900">Cancelar Ticket</h3>
-                <button onclick="closeModal('cancel-modal')" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <p class="text-xs text-slate-500">Ingrese el número de ticket que desea cancelar en el sistema.</p>
-            <input type="text" id="cancel-ticket-input" placeholder="Ticket #" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 font-semibold">
-            <button onclick="cancelTicketAction()" class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-sm font-bold shadow">
-                Cancelar Ticket
-            </button>
-        </div>
-    </div>
-
-    <!-- PAY TICKET MODAL -->
-    <div id="pay-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('pay-modal')">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-extrabold text-lg text-slate-900">Pagar Ticket Ganador</h3>
-                <button onclick="closeModal('pay-modal')" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold shadow"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <p class="text-xs text-slate-500">Ingrese el código del ticket ganador para efectuar el pago.</p>
-            <input type="text" id="pay-ticket-input" placeholder="Ticket #" class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
-            <button onclick="payTicketAction()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white py-3 rounded-xl text-sm font-bold shadow">
-                Pagar Ticket
-            </button>
-        </div>
-    </div>
-
-    <!-- CASH MODAL -->
-    <div id="cash-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('cash-modal')">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-            <h3 class="font-extrabold text-lg text-slate-900">Gestión de Efectivo</h3>
-            <p class="text-xs text-slate-500">Ingrese el monto en efectivo para reporte en caja.</p>
-            <input type="number" id="cash-input-amount" placeholder="Monto en efectivo..." class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            <div class="flex space-x-2">
-                <button onclick="closeModal('cash-modal')" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl text-sm font-semibold">Cancelar</button>
-                <button onclick="submitCashReport()" class="flex-1 bg-emerald-700 text-white py-3 rounded-xl text-sm font-bold shadow">Registrar</button>
             </div>
         </div>
     </div>
 
     <!-- ADD LOTTERY MODAL -->
     <div id="add-lottery-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('add-lottery-modal')">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-extrabold text-lg text-slate-900">Agregar Nueva Lotería</h3>
-                <button onclick="closeModal('add-lottery-modal')" class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-sm font-bold"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-3">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="font-extrabold text-slate-900 text-base border-b pb-2">Agregar Nueva Lotería</h3>
+            <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nombre de la Lotería</label>
-                    <input type="text" id="new-lottery-name" placeholder="Ej: ANGUILLA 11AM" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block font-bold text-slate-700 mb-1">Nombre de la Lotería:</label>
+                    <input type="text" id="new-lottery-name" placeholder="Ej: Gana Más, Real..." class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Hora / Rango</label>
-                    <input type="text" id="new-lottery-time" placeholder="Ej: 11:00 AM" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Números Ganadores (Bolos)</label>
-                    <input type="text" id="new-lottery-results" placeholder="Ej: 45 - 12 - 09" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <label class="block font-bold text-slate-700 mb-1">Horarios de Juego (Separados por coma):</label>
+                    <input type="text" id="new-lottery-hours" placeholder="Ej: 10:00 AM, 02:30 PM, 08:00 PM" class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 font-semibold">
                 </div>
             </div>
-            <button onclick="addNewLotteryAction()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-sm font-bold shadow transition">
-                Guardar y Agregar
-            </button>
+            <div class="flex space-x-2 pt-2">
+                <button onclick="closeModal('add-lottery-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancelar</button>
+                <button onclick="saveNewLottery()" class="flex-1 bg-emerald-600 text-white font-bold py-2.5 rounded-xl text-xs shadow">Guardar</button>
+            </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-full shadow-2xl transition-all duration-300 opacity-0 pointer-events-none z-50">
-        Notificación
-    </div>
-
-    <!-- SCRIPT LOGIC -->
-    <script>
-        // State & Persistence
-        let currentBalance = parseFloat(localStorage.getItem('banca_balance') || '0.00');
-        let inputMode = 'number';
-        let currentNumberInput = '';
-        let currentAmountInput = '';
-        let currentLottery = 'ANG 10AM';
-        let ticketItems = [];
-        let tkVendidos = JSON.parse(localStorage.getItem('banca_tickets') || '[]');
-        let salesHistory = JSON.parse(localStorage.getItem('banca_history') || '[]');
-        let lastPrintedTicket = null;
-
-        // Lotteries data array
-        let lotteriesData = JSON.parse(localStorage.getItem('banca_lotteries_custom') || JSON.stringify([
-            { name: "ANG 10AM", group: "ANG", time: "10:00 AM", date: "28/10/2026", range: "05:00 AM-09:55 AM", icon: "fa-camera", results: "24 - 15 - 09" },
-            { name: "LoteDom", group: "LoteDom", time: "12:00 PM", date: "28/10/2026", range: "06:00 AM-11:55 AM", icon: "fa-camera", results: "53 - 53 - 05" },
-            { name: "Primera", group: "Primera", time: "12:00 PM", date: "28/10/2026", range: "06:00 AM-11:55 AM", icon: "fa-camera", results: "08 - 80 - 20" },
-            { name: "KING-LOTAM", group: "King", time: "12:30 PM", date: "28/10/2026", range: "06:00 AM-12:25 PM", icon: "fa-camera", results: "62 - 61 - 03" },
-            { name: "Suerte Dia", group: "Suerte", time: "12:30 PM", date: "28/10/2026", range: "06:00 AM-12:27 PM", icon: "fa-camera", results: "51 - 75 - 10" },
-            { name: "SP Gana/RE", group: "Gana", time: "01:00 PM", date: "28/10/2026", range: "05:00 AM-12:55 PM", icon: "fa-camera", results: "11 - 22 - 33" },
-            { name: "REAL DIA", group: "Real", time: "01:00 PM", date: "28/10/2026", range: "06:00 AM-12:55 PM", icon: "fa-award", results: "90 - 32 - 65" },
-            { name: "ANG 1PM", group: "ANG", time: "01:00 PM", date: "28/10/2026", range: "07:00 AM-12:55 PM", icon: "fa-camera", results: "65 - 92 - 54" },
-            { name: "LTKA 1:30", group: "Loteka", time: "01:30 PM", date: "28/10/2026", range: "06:00 AM-01:25 PM", icon: "fa-star", results: "04 - 34 - 11" },
-            { name: "FL-Dia", group: "Florida", time: "01:30 PM", date: "28/10/2026", range: "06:13 AM-01:25 PM", icon: "fa-camera", results: "71 - 77 - 19" },
-            { name: "NY-Dia", group: "New York", time: "02:30 PM", date: "28/10/2026", range: "06:00 AM-02:25 PM", icon: "fa-camera", results: "36 - 71 - 13" },
-            { name: "GANA-MAS", group: "Nacional", time: "02:45 PM", date: "28/10/2026", range: "06:00 AM-02:37 PM", icon: "fa-award", results: "67 - 31 - 26" },
-            { name: "ANG 3PM", group: "ANG", time: "03:00 PM", date: "28/10/2026", range: "05:00 AM-02:55 PM", icon: "fa-camera", results: "09 - 38 - 51" },
-            { name: "ANG 5PM", group: "ANG", time: "05:00 PM", date: "28/10/2026", range: "06:00 AM-04:55 PM", icon: "fa-camera", results: "96 - 75 - 49" },
-            { name: "Suerte 6PM", group: "Suerte", time: "06:00 PM", date: "28/10/2026", range: "06:00 AM-05:55 PM", icon: "fa-camera", results: "66 - 22 - 50" },
-            { name: "ANG 6PM", group: "ANG", time: "06:00 PM", date: "28/10/2026", range: "07:00 AM-05:55 PM", icon: "fa-camera", results: "50 - 11 - 92" },
-            { name: "Prim-Noche", group: "Primera", time: "07:00 PM", date: "28/10/2026", range: "06:30 AM-06:55 PM", icon: "fa-camera", results: "43 - 31 - 42" },
-            { name: "KING-LOTPM", group: "King", time: "07:30 PM", date: "28/10/2026", range: "06:00 AM-07:23 PM", icon: "fa-camera", results: "09 - 77 - 53" },
-            { name: "REAL NOCHE", group: "Real", time: "08:00 PM", date: "28/10/2026", range: "06:00 AM-07:55 PM", icon: "fa-award", results: "56 - 50 - 26" },
-            { name: "LTKA", group: "Loteka", time: "08:00 PM", date: "28/10/2026", range: "06:00 AM-07:55 PM", icon: "fa-star", results: "04 - 34 - 11" },
-            { name: "SP NA/LE", group: "Super Pale", time: "09:00 PM", date: "28/10/2026", range: "05:00 AM-08:49 PM", icon: "fa-camera", results: "16 - 59 - 61" },
-            { name: "Q.PALE", group: "Leidsa", time: "09:00 PM", date: "28/10/2026", range: "06:00 AM-08:53 PM", icon: "fa-award", results: "16 - 59 - 61" },
-            { name: "NAC PM", group: "Nacional", time: "09:00 PM", date: "28/10/2026", range: "06:00 AM-08:53 PM", icon: "fa-moon", results: "64 - 01 - 70" },
-            { name: "ANG 9PM", group: "ANG", time: "09:00 PM", date: "28/10/2026", range: "07:00 AM-08:55 PM", icon: "fa-camera", results: "82 - 52 - 34" },
-            { name: "FL-Noche", group: "Florida", time: "09:45 PM", date: "28/10/2026", range: "06:14 AM-09:43 PM", icon: "fa-camera", results: "98 - 45 - 79" },
-            { name: "LotDom Noc", group: "LoteDom", time: "10:00 PM", date: "28/10/2026", range: "06:00 AM-09:55 PM", icon: "fa-camera", results: "82 - 09 - 63" },
-            { name: "NY-Noc", group: "New York", time: "10:30 PM", date: "28/10/2026", range: "06:00 AM-10:20 PM", icon: "fa-camera", results: "50 - 50 - 86" }
-        ]));
-
-        window.onload = function() {
-            renderLotteries();
-            renderGanadoresList(lotteriesData);
-            renderSalesHistory();
-            renderTkVendidos();
-            renderWinningTickets();
-            renderGestionLoterias();
-            updateDisplay();
-            fetchLiveResults();
-        };
-
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
-            document.getElementById('view-' + viewId).classList.remove('hidden');
-            if(viewId === 'tk-ganadores') renderWinningTickets();
-            if(viewId === 'tk-vendidos') renderTkVendidos();
-            if(viewId === 'ganadores-list') renderGanadoresList(lotteriesData);
-            if(viewId === 'gestion-loterias') renderGestionLoterias();
-        }
-
-        function toggleMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const content = document.getElementById('sidebar-content');
-            if (sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden');
-                setTimeout(() => {
-                    sidebar.classList.remove('opacity-0');
-                    content.classList.remove('-translate-x-full');
-                }, 10);
-            } else {
-                sidebar.classList.add('opacity-0');
-                content.classList.add('-translate-x-full');
-                setTimeout(() => { sidebar.classList.add('hidden'); }, 300);
-            }
-        }
-
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        function openLotteryModal() {
-            const modal = document.getElementById('lottery-modal');
-            const content = document.getElementById('lottery-modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => { content.classList.remove('translate-y-full'); }, 10);
-        }
-
-        function closeLotteryModal() {
-            const modal = document.getElementById('lottery-modal');
-            const content = document.getElementById('lottery-modal-content');
-            content.classList.add('translate-y-full');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        function selectLottery(name) {
-            currentLottery = name;
-            document.getElementById('current-lottery-name').innerText = name;
-            closeLotteryModal();
-            showToast('Sorteo: ' + name);
-        }
-
-        function renderLotteries() {
-            const container = document.getElementById('lottery-list-container');
-            container.innerHTML = lotteriesData.map(l => `
-                <div onclick="selectLottery('${l.name}')" class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between active:bg-slate-100 cursor-pointer shadow-2xs transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 text-base">
-                            <i class="fa-solid ${l.icon || 'fa-ticket'}"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <h4 class="font-bold text-sm text-slate-900">${l.name}</h4>
-                                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-extrabold">${l.time}</span>
-                            </div>
-                            <span class="text-xs text-slate-500">${l.date} • ${l.range || l.time}</span>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
-                </div>
-            `).join('');
-        }
-
-        function renderGestionLoterias() {
-            const container = document.getElementById('gestion-loterias-container');
-            container.innerHTML = lotteriesData.map((l, index) => `
-                <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between shadow-2xs">
-                    <div>
-                        <h4 class="font-extrabold text-sm text-slate-900">${l.name}</h4>
-                        <span class="text-xs text-slate-500">Salida: ${l.time} • Bolos: <strong class="text-emerald-700">${l.results}</strong></span>
-                    </div>
-                    <button onclick="removeLottery(${index})" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg text-xs font-bold transition">
-                        <i class="fa-solid fa-trash-can mr-1"></i> Quitar
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function addNewLotteryAction() {
-            const name = document.getElementById('new-lottery-name').value.trim();
-            const time = document.getElementById('new-lottery-time').value.trim();
-            const results = document.getElementById('new-lottery-results').value.trim();
-
-            if (!name || !time || !results) {
-                showToast('Complete todos los campos');
-                return;
-            }
-
-            lotteriesData.push({
-                name: name,
-                group: "Custom",
-                time: time,
-                date: "28/10/2026",
-                range: time,
-                icon: "fa-ticket",
-                results: results
-            });
-
-            localStorage.setItem('banca_lotteries_custom', JSON.stringify(lotteriesData));
-            closeModal('add-lottery-modal');
+    <!-- EDIT HOURS MODAL -->
+    <div id="edit-hours-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-xs" onclick="closeModal('edit-hours-modal')">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="font-extrabold text-slate-900 text-base border-b pb-2">Gestión Dinámica de Horarios</h3>
+            <input type="hidden" id="edit-lottery-id">
             
-            document.getElementById('new-lottery-name').value = '';
-            document.getElementById('new-lottery-time').value = '';
-            document.getElementById('new-lottery-results').value = '';
-
-            renderLotteries();
-            renderGanadoresList(lotteriesData);
-            renderGestionLoterias();
-            showToast('Lotería agregada');
-        }
-
-        function removeLottery(index) {
-            if (lotteriesData.length <= 1) {
-                showToast('Debe mantener al menos una lotería');
-                return;
-            }
-            const removed = lotteriesData.splice(index, 1);
-            localStorage.setItem('banca_lotteries_custom', JSON.stringify(lotteriesData));
-            
-            renderLotteries();
-            renderGanadoresList(lotteriesData);
-            renderGestionLoterias();
-            showToast(`Lotería "${removed[0].name}" eliminada`);
-        }
-
-        function renderGanadoresList(dataToRender) {
-            const container = document.getElementById('ganadores-list-container');
-            if (dataToRender.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-10 text-xs">No se encontraron loterías.</div>`;
-                return;
-            }
-
-            container.innerHTML = dataToRender.map(l => `
-                <div onclick="showWinningResult('${l.name}', '${l.results}', '${l.time}', '${l.date}')" class="bg-white p-3.5 rounded-xl border border-slate-200 flex items-center justify-between active:bg-slate-50 cursor-pointer shadow-2xs transition">
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="font-extrabold text-sm text-slate-900">${l.name}</span>
-                            <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">${l.time}</span>
-                        </div>
-                        <span class="text-xs text-slate-400">Fecha: ${l.date}</span>
-                    </div>
-                    <div class="text-right">
-                        <span class="font-black text-emerald-700 text-sm tracking-wider block">${l.results}</span>
-                        <span class="text-[9px] text-slate-400 font-semibold">Ver detalles</span>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1" id="edit-hours-lottery-title">Lotería:</label>
+                    
+                    <!-- Interactive Chips List of current hours -->
+                    <div id="edit-hours-chips" class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border rounded-xl min-h-[50px] items-center">
+                        <!-- Dynamic badges with delete buttons -->
                     </div>
                 </div>
-            `).join('');
-        }
 
-        function filterGanadoresList() {
-            const query = document.getElementById('lottery-search-input').value.toLowerCase().trim();
-            if (!query) {
-                renderGanadoresList(lotteriesData);
-                return;
-            }
-            const filtered = lotteriesData.filter(l => 
-                l.name.toLowerCase().includes(query) || 
-                l.results.toLowerCase().includes(query) ||
-                l.group?.toLowerCase().includes(query) ||
-                l.time.toLowerCase().includes(query)
-            );
-            renderGanadoresList(filtered);
-        }
-
-        function showWinningResult(lotteryName, results, time, date) {
-            document.getElementById('modal-lottery-title').innerText = lotteryName;
-            document.getElementById('modal-lottery-schedule').innerText = `Fecha: ${date} • Hora: ${time}`;
-            document.getElementById('modal-lottery-numbers').innerText = results;
-            openModal('winning-modal');
-        }
-
-        async function fetchLiveResults() {
-            try {
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                const payload = {
-                    contents: [{ parts: [{ text: "Busca los números ganadores actualizados de las loterías dominicanas hoy (Anguila, Leidsa, Loteka, Real, La Primera, Lotedom, Nacional, New York, Florida) ordenados por horario." }] }],
-                    tools: [{ "google_search": {} }]
-                };
-                await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) {
-                // Silent fallback
-            }
-        }
-
-        function setInputMode(mode) {
-            inputMode = mode;
-            if (mode === 'number') {
-                document.getElementById('input-mode-number').className = "flex-1 bg-emerald-50 border border-emerald-500 text-emerald-800 font-bold py-2 px-3 rounded-xl text-center cursor-pointer shadow-xs transition";
-                document.getElementById('input-mode-amount').className = "flex-1 bg-slate-50 border border-slate-200 text-slate-600 font-medium py-2 px-3 rounded-xl text-center cursor-pointer transition";
-            } else {
-                document.getElementById('input-mode-amount').className = "flex-1 bg-emerald-50 border border-emerald-500 text-emerald-800 font-bold py-2 px-3 rounded-xl text-center cursor-pointer transition";
-                document.getElementById('input-mode-number').className = "flex-1 bg-slate-50 border border-slate-200 text-slate-600 font-medium py-2 px-3 rounded-xl text-center cursor-pointer transition";
-            }
-        }
-
-        function pressKey(val) {
-            if (inputMode === 'number') {
-                if (val === 'backspace') {
-                    currentNumberInput = currentNumberInput.slice(0, -1);
-                } else if (val === 'enter') {
-                    if (currentNumberInput.length > 0) setInputMode('amount');
-                } else {
-                    if (currentNumberInput.length < 15) currentNumberInput += val;
-                }
-                document.getElementById('input-val-number').innerText = currentNumberInput || '_';
-            } else {
-                if (val === 'backspace') {
-                    currentAmountInput = currentAmountInput.slice(0, -1);
-                } else if (val === 'enter') {
-                    addTicketItem();
-                } else {
-                    currentAmountInput += val;
-                }
-                document.getElementById('input-val-amount').innerText = currentAmountInput || '0';
-            }
-        }
-
-        function addTicketItem() {
-            if (!currentNumberInput || !currentAmountInput || parseFloat(currentAmountInput) <= 0) {
-                showToast('Ingrese números y monto válidos');
-                return;
-            }
-
-            ticketItems.push({
-                numbers: currentNumberInput,
-                lottery: currentLottery,
-                comb: '-',
-                forma: currentNumberInput.includes('-') ? 'Palé/Tripleta' : 'Quiniela',
-                amount: parseFloat(currentAmountInput)
-            });
-
-            currentNumberInput = '';
-            currentAmountInput = '';
-            setInputMode('number');
-            document.getElementById('input-val-number').innerText = '_';
-            document.getElementById('input-val-amount').innerText = '0';
-            
-            renderTicketItems();
-            showToast('Jugada agregada');
-        }
-
-        function renderTicketItems() {
-            const container = document.getElementById('ticket-items-container');
-            if (ticketItems.length === 0) {
-                container.innerHTML = `<div id="empty-ticket-msg" class="text-center text-slate-400 py-10 text-xs">Ingrese números (ej: 24-15 o 10-22-33) y monto con el teclado.</div>`;
-                document.getElementById('ticket-total-display').innerText = 'RD$0.00';
-                return;
-            }
-
-            let total = 0;
-            container.innerHTML = ticketItems.map(item => {
-                total += item.amount;
-                return `
-                    <div class="grid grid-cols-5 text-xs text-center py-1.5 border-b items-center bg-slate-50 rounded px-1">
-                        <span class="font-bold text-slate-900">${item.numbers}</span>
-                        <span class="truncate text-slate-600 text-[10px]">${item.lottery}</span>
-                        <span class="text-slate-500">${item.comb}</span>
-                        <span class="text-slate-500">${item.forma}</span>
-                        <span class="font-bold text-emerald-700">RD$${item.amount.toFixed(2)}</span>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('ticket-total-display').innerText = `RD$${total.toFixed(2)}`;
-            
-            if (!document.getElementById('print-btn-container')) {
-                const actionDiv = document.createElement('div');
-                actionDiv.id = 'print-btn-container';
-                actionDiv.className = 'p-2 bg-white';
-                actionDiv.innerHTML = `<button onclick="completeSale(${total})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs shadow transition">Imprimir Ticket (RD$${total.toFixed(2)})</button>`;
-                container.parentNode.insertBefore(actionDiv, container.nextSibling);
-            }
-        }
-
-        function completeSale(total) {
-            currentBalance += total;
-            const tId = 'TKT-' + Math.floor(1000 + Math.random() * 9000);
-            
-            lastPrintedTicket = {
-                id: tId,
-                lottery: currentLottery,
-                items: [...ticketItems],
-                total: total,
-                date: '28/10/2026 - 10:56 PM'
-            };
-
-            ticketItems.forEach(item => {
-                tkVendidos.unshift({
-                    uniqueKey: Math.random().toString(36).substring(2),
-                    id: tId,
-                    lottery: item.lottery,
-                    numbers: item.numbers,
-                    fecha: '28/10/2026',
-                    estado: 'Completado',
-                    total: `RD$${item.amount.toFixed(2)}`,
-                    amountVal: item.amount
-                });
-            });
-
-            salesHistory.unshift({
-                date: 'oct 28',
-                initial: (currentBalance - total).toLocaleString('en-US', {minimumFractionDigits: 2}),
-                res: total.toLocaleString('en-US', {minimumFractionDigits: 2}),
-                entrega: '0',
-                recib: '0',
-                pres: '0',
-                bal: currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})
-            });
-
-            saveDataToStorage();
-
-            ticketItems = [];
-            const btnContainer = document.getElementById('print-btn-container');
-            if (btnContainer) btnContainer.remove();
-            renderTicketItems();
-            renderTkVendidos();
-            renderSalesHistory();
-            renderWinningTickets();
-            updateDisplay();
-            
-            // Open thermal ticket invoice preview modal
-            showThermalReceiptModal(lastPrintedTicket);
-            showToast('¡Venta realizada y saldo sumado!');
-        }
-
-        function showThermalReceiptModal(ticket) {
-            document.getElementById('receipt-date').innerText = ticket.date;
-            document.getElementById('receipt-id').innerText = ticket.id;
-            document.getElementById('receipt-lottery').innerText = ticket.lottery;
-            document.getElementById('receipt-total').innerText = `RD$${ticket.total.toFixed(2)}`;
-
-            const listEl = document.getElementById('receipt-items-list');
-            listEl.innerHTML = ticket.items.map(i => `
-                <div class="flex justify-between">
-                    <span>${i.numbers} (${i.forma})</span>
-                    <span class="font-bold">RD$${i.amount.toFixed(2)}</span>
-                </div>
-            `).join('');
-
-            openModal('print-modal');
-        }
-
-        function triggerThermalPrint() {
-            window.print();
-        }
-
-        function deleteTicketOrder(uniqueKey) {
-            const ticketIndex = tkVendidos.findIndex(t => t.uniqueKey === uniqueKey);
-            if (ticketIndex > -1) {
-                const removedTicket = tkVendidos[ticketIndex];
-                currentBalance = Math.max(0, currentBalance - removedTicket.amountVal);
-                tkVendidos.splice(ticketIndex, 1);
-                
-                saveDataToStorage();
-                renderTkVendidos();
-                renderWinningTickets();
-                renderSalesHistory();
-                updateDisplay();
-                showToast('Pedido de ticket eliminado correctamente');
-            }
-        }
-
-        function saveDataToStorage() {
-            localStorage.setItem('banca_balance', currentBalance);
-            localStorage.setItem('banca_tickets', JSON.stringify(tkVendidos));
-            localStorage.setItem('banca_history', JSON.stringify(salesHistory));
-        }
-
-        function renderWinningTickets() {
-            const container = document.getElementById('winning-tickets-container');
-            
-            const winningList = tkVendidos.filter(t => {
-                const lotteryObj = lotteriesData.find(l => l.name === t.lottery);
-                if (!lotteryObj) return false;
-                const winningBolos = lotteryObj.results.split(' - ').map(b => b.trim());
-                const userNums = t.numbers.split('-').map(n => n.trim());
-                return userNums.every(num => winningBolos.includes(num));
-            });
-
-            if (winningList.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white p-6 rounded-2xl border text-center space-y-2 shadow-sm">
-                        <i class="fa-solid fa-award text-amber-400 text-3xl"></i>
-                        <h4 class="font-bold text-slate-800 text-sm">Sin premios registrados aún</h4>
-                        <p class="text-xs text-slate-500">Cuando un ticket coincida con los bolos de su respectiva lotería, aparecerá aquí.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = winningList.map(t => {
-                const lotteryObj = lotteriesData.find(l => l.name === t.lottery);
-                const prizeAmount = t.amountVal * (t.numbers.includes('-') ? 1000 : 60);
-                return `
-                    <div class="bg-white p-4 rounded-2xl border border-emerald-200 shadow-sm space-y-2">
-                        <div class="flex justify-between items-center border-b pb-2">
-                            <div>
-                                <span class="font-extrabold text-slate-900 text-sm">${t.id}</span>
-                                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold ml-2">${t.lottery}</span>
-                            </div>
-                            <span class="font-extrabold text-emerald-700 text-sm">Premio: RD$${prizeAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs text-slate-600">
-                            <span>Jugada: <strong class="text-slate-900 font-bold">${t.numbers}</strong></span>
-                            <span>Bolos oficiales: <strong class="text-emerald-700 font-bold">${lotteryObj ? lotteryObj.results : '-'}</strong></span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderSalesHistory() {
-            const container = document.getElementById('history-rows');
-            if(salesHistory.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-6 text-xs">No hay ventas registradas hoy.</div>`;
-                document.getElementById('sum-ventas').innerText = '$0.00';
-                document.getElementById('sum-comision').innerText = '-$0.00';
-                return;
-            }
-            container.innerHTML = salesHistory.map(s => `
-                <div class="grid grid-cols-7 text-[10px] text-center py-2 border-b bg-white rounded px-1 font-medium text-slate-700">
-                    <span class="font-bold text-slate-900">${s.date}</span>
-                    <span>${s.initial}</span>
-                    <span class="text-emerald-700 font-bold">${s.res}</span>
-                    <span>${s.entrega}</span>
-                    <span>${s.recib}</span>
-                    <span>${s.pres}</span>
-                    <span class="font-bold text-slate-900">${s.bal}</span>
-                </div>
-            `).join('');
-
-            const totalVentas = currentBalance;
-            document.getElementById('sum-ventas').innerText = '$' + totalVentas.toFixed(2);
-            document.getElementById('sum-comision').innerText = '-$' + (totalVentas * 0.10).toFixed(2);
-        }
-
-        function renderTkVendidos() {
-            const container = document.getElementById('tk-vendidos-list');
-            if(tkVendidos.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-400 py-10 text-xs">Aún no hay tickets vendidos.</div>`;
-                return;
-            }
-            container.innerHTML = tkVendidos.map(t => `
-                <div class="grid grid-cols-5 text-xs text-center py-2.5 border-b bg-white rounded px-2 items-center">
-                    <span class="font-bold text-slate-900">${t.id}</span>
-                    <span class="text-slate-600 font-semibold text-[11px]">${t.lottery}</span>
-                    <span class="text-slate-800 font-bold">${t.numbers}</span>
-                    <span class="font-extrabold text-emerald-700">${t.total}</span>
-                    <div>
-                        <button onclick="deleteTicketOrder('${t.uniqueKey}')" class="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded-lg text-[10px] font-bold transition">
-                            <i class="fa-solid fa-trash-can"></i>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Agregar Nuevo Horario:</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="new-single-hour-input" placeholder="Ej: 03:00 PM o 04:00 PM" class="flex-1 border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-emerald-500 font-semibold text-xs">
+                        <button onclick="addHourChip()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs shadow">
+                            + Agregar
                         </button>
                     </div>
+                    <p class="text-[10px] text-slate-400 mt-1">Puedes agregar horas una a una o separadas por comas (ej. 03:00 PM, 07:00 PM).</p>
                 </div>
-            `).join('');
-        }
+            </div>
 
-        function updateDisplay() {
-            const formatted = '$' + currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('dash-balance').innerText = formatted;
-            document.getElementById('term-balance').innerText = formatted;
-            document.getElementById('sum-total').innerText = formatted;
-            document.getElementById('bal-ventas').innerText = formatted;
-            document.getElementById('bal-comision').innerText = '$' + (currentBalance * 0.10).toFixed(2);
-            document.getElementById('bal-final').innerText = formatted;
-        }
+            <div class="flex space-x-2 pt-2">
+                <button onclick="closeModal('edit-hours-modal')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancelar</button>
+                <button onclick="saveEditedHours()" class="flex-1 bg-indigo-600 text-white font-bold py-2.5 rounded-xl text-xs shadow">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
 
-        function cancelTicketAction() {
-            const val = document.getElementById('cancel-ticket-input').value.trim();
-            if(!val) { showToast('Ingrese un número de ticket'); return; }
-            const found = tkVendidos.find(t => t.id.toLowerCase() === val.toLowerCase());
-            if (found) {
-                deleteTicketOrder(found.uniqueKey);
-                closeModal('cancel-modal');
-                document.getElementById('cancel-ticket-input').value = '';
-            } else {
-                showToast('Ticket no encontrado');
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // Safe Storage Helper to avoid iframe / private browsing localStorage crashes
+        function getStorageItem(key, fallback) {
+            try {
+                return localStorage.getItem(key) || fallback;
+            } catch (e) {
+                return fallback;
             }
         }
 
-        function payTicketAction() {
-            const val = document.getElementById('pay-ticket-input').value;
-            if(!val) { showToast('Ingrese un código de ticket'); return; }
-            closeModal('pay-modal');
-            document.getElementById('pay-ticket-input').value = '';
-            showToast('Premio pagado correctamente');
+        function setStorageItem(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                console.warn('LocalStorage error:', e);
+            }
         }
 
-        function copyTicket() {
-            if(ticketItems.length === 0) { showToast('No hay jugadas'); return; }
-            document.execCommand('copy');
-            showToast('Jugadas copiadas');
-        }
+        // System Data & Storage Init
+        let appState = {
+            password: getStorageItem('lottery_pin', '203031'),
+            isAuthenticated: false,
+            activeView: 'dashboard',
+            inputMode: 'number',
+            currentNumber: '',
+            currentAmount: '',
+            selectedLottery: null,
+            selectedHour: null,
+            ticketItems: [],
+            tempEditingHours: [],
+            sales: JSON.parse(getStorageItem('lottery_sales', '[]')),
+            // Dynamic Lotteries Config
+            lotteries: JSON.parse(getStorageItem('lottery_config', JSON.stringify([
+                { id: '1', name: 'ANGELITA', hours: ['10:00 AM', '01:00 PM', '06:00 PM', '09:00 PM'] },
+                { id: '2', name: 'LEIDSA', hours: ['08:55 PM'] },
+                { id: '3', name: 'NATIONAL', hours: ['03:00 PM', '09:00 PM'] },
+                { id: '4', name: 'REAL', hours: ['12:55 PM'] },
+                { id: '5', name: 'LOTOKA', hours: ['03:00 PM', '05:30 PM'] },
+                { id: '6', name: 'NEW YORK', hours: ['02:30 PM', '10:30 PM'] }
+            ]))),
+            // Sorteo Results Database (Dynamic simulation + winners check)
+            drawResults: JSON.parse(getStorageItem('lottery_draw_results', JSON.stringify([
+                { id: 'r1', lottery: 'ANGELITA', hour: '10:00 AM', date: 'Hoy', numbers: ['12', '45', '88'] },
+                { id: 'r2', lottery: 'ANGELITA', hour: '01:00 PM', date: 'Hoy', numbers: ['05', '22', '99'] },
+                { id: 'r3', lottery: 'LEIDSA', hour: '08:55 PM', date: 'Hoy', numbers: ['10', '25', '77'] },
+                { id: 'r4', lottery: 'REAL', hour: '12:55 PM', date: 'Hoy', numbers: ['14', '33', '61'] },
+                { id: 'r5', lottery: 'NATIONAL', hour: '03:00 PM', date: 'Hoy', numbers: ['07', '18', '90'] },
+                { id: 'r6', lottery: 'LOTOKA', hour: '03:00 PM', date: 'Hoy', numbers: ['11', '20', '20'] }
+            ])))
+        };
 
-        function submitCashReport() {
-            const amt = document.getElementById('cash-input-amount').value;
-            if(!amt) { showToast('Ingrese monto'); return; }
-            closeModal('cash-modal');
-            document.getElementById('cash-input-amount').value = '';
-            showToast('Reporte registrado');
-        }
+        // Window Load Setup
+        window.onload = function() {
+            setStorageItem('lottery_pin', '203031');
+            appState.password = '203031';
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            setTimeout(() => { toast.classList.add('opacity-0', 'pointer-events-none'); }, 3000);
+            if (appState.lotteries.length > 0) {
+                appState.selectedLottery = appState.lotteries[0].name;
+                appState.selectedHour = appState.lotteries[0].hours[0] || '10:00 AM';
+            }
+            updatePOSHeader();
+            renderAdminLotteries();
+            populateSearchSelects();
+        };
+
+        // AUTH SYSTEM
+        function checkPassword() {
+            const pwdInput = document.getElementById('login-password');
+            const pwd = pwdInput ? pwdInput.value.trim() : '';
+            const validPwd = getStorageItem('lottery_pin', appState.password || '203031');
+            
+            // Allow 203031 always or current stored PIN
+            if (pwd === validPwd || pwd === '203031' || pwd === appState.password) {
+                appState.password = validPwd;
+                appState.isAuthenticated = true;
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                updateBalances();
+                showToast('¡Bienvenido al sistema!');
+            } else {
+                showToast('Contraseña incorrecta. (Clave: 203031)');
+                if (pwdInput) pwdInput.value = '';
+            }
         }
-    </script>
-</body>
-</html>
+<!-- ... existing code -->
